@@ -8,6 +8,28 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glew_static", "glew\build\vc12\glew_static.vcxproj", "{664E6F0D-6784-4760-9565-D54F8EB1EDF4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_blue_window", "00_blue_window\00_blue_window.vcxproj", "{9DF650B1-2D1E-45EF-86D4-9D76A3B4FBF1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4} = {664E6F0D-6784-4760-9565-D54F8EB1EDF4}
+		{DB591261-46E8-48F2-86ED-EC6BCB54299A} = {DB591261-46E8-48F2-86ED-EC6BCB54299A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01_animating_color", "01_animating_color\01_animating_color.vcxproj", "{F0626A23-46FD-4C59-A6CE-2009B1A73D1C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4} = {664E6F0D-6784-4760-9565-D54F8EB1EDF4}
+		{DB591261-46E8-48F2-86ED-EC6BCB54299A} = {DB591261-46E8-48F2-86ED-EC6BCB54299A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02_first_shader", "02_first_shader\02_first_shader.vcxproj", "{607AC538-96E4-4A63-AFC3-BE4950A3A6D2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4} = {664E6F0D-6784-4760-9565-D54F8EB1EDF4}
+		{DB591261-46E8-48F2-86ED-EC6BCB54299A} = {DB591261-46E8-48F2-86ED-EC6BCB54299A}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03_first_triangle", "03_first_triangle\03_first_triangle.vcxproj", "{40F994FB-3442-4B65-8B67-98DEDA7A0AE8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4} = {664E6F0D-6784-4760-9565-D54F8EB1EDF4}
+		{DB591261-46E8-48F2-86ED-EC6BCB54299A} = {DB591261-46E8-48F2-86ED-EC6BCB54299A}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +49,18 @@ Global
 		{9DF650B1-2D1E-45EF-86D4-9D76A3B4FBF1}.Debug|x64.Build.0 = Debug|x64
 		{9DF650B1-2D1E-45EF-86D4-9D76A3B4FBF1}.Release|x64.ActiveCfg = Release|x64
 		{9DF650B1-2D1E-45EF-86D4-9D76A3B4FBF1}.Release|x64.Build.0 = Release|x64
+		{F0626A23-46FD-4C59-A6CE-2009B1A73D1C}.Debug|x64.ActiveCfg = Debug|x64
+		{F0626A23-46FD-4C59-A6CE-2009B1A73D1C}.Debug|x64.Build.0 = Debug|x64
+		{F0626A23-46FD-4C59-A6CE-2009B1A73D1C}.Release|x64.ActiveCfg = Release|x64
+		{F0626A23-46FD-4C59-A6CE-2009B1A73D1C}.Release|x64.Build.0 = Release|x64
+		{607AC538-96E4-4A63-AFC3-BE4950A3A6D2}.Debug|x64.ActiveCfg = Debug|x64
+		{607AC538-96E4-4A63-AFC3-BE4950A3A6D2}.Debug|x64.Build.0 = Debug|x64
+		{607AC538-96E4-4A63-AFC3-BE4950A3A6D2}.Release|x64.ActiveCfg = Release|x64
+		{607AC538-96E4-4A63-AFC3-BE4950A3A6D2}.Release|x64.Build.0 = Release|x64
+		{40F994FB-3442-4B65-8B67-98DEDA7A0AE8}.Debug|x64.ActiveCfg = Debug|x64
+		{40F994FB-3442-4B65-8B67-98DEDA7A0AE8}.Debug|x64.Build.0 = Debug|x64
+		{40F994FB-3442-4B65-8B67-98DEDA7A0AE8}.Release|x64.ActiveCfg = Release|x64
+		{40F994FB-3442-4B65-8B67-98DEDA7A0AE8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
