@@ -365,7 +365,7 @@ public:
 		// use the indices to draw the particles
 		gl.DrawElements(
 			PrimitiveType::Points,
-			indices.size(),
+			static_cast<GLsizei>(indices.size()),
 			indices.data()
 		);
 	}

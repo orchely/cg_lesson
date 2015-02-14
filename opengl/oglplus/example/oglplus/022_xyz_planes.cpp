@@ -309,21 +309,21 @@ public:
 		GLfloat sign = ((camera*normal).z() >= 0.0f)? 1.0f: -1.0f;
 		bool at_leaf = p+1 == plane.size();
 
-		+(Functionality::ClipDistance|p);
+		+(Functionality::ClipDistance|static_cast<GLuint>(p));
 		torus_clip_signs[p].Set(-sign);
 		plane_clip_signs[p].Set(-sign);
 		if(at_leaf) RenderTorus();
 		else BSP(camera, p+1);
-		-(Functionality::ClipDistance|p);
+		-(Functionality::ClipDistance|static_cast<GLuint>(p));
 
 		RenderPlane(p);
 
-		+(Functionality::ClipDistance|p);
+		+(Functionality::ClipDistance|static_cast<GLuint>(p));
 		torus_clip_signs[p].Set(+sign);
 		plane_clip_signs[p].Set(+sign);
 		if(at_leaf) RenderTorus();
 		else BSP(camera, p+1);
-		-(Functionality::ClipDistance|p);
+		-(Functionality::ClipDistance|static_cast<GLuint>(p));
 
 	}
 
