@@ -1,9 +1,0 @@
-*~
-*.suo
-*.sdf
-*.opensdf
-freeglut/msvc/freeglut_static.dir/
-freeglut/msvc/lib/
-glew/bin/
-glew/build/vc12/tmp/
-glew/lib/

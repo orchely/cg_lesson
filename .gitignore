@@ -1,0 +1,11 @@
+*~
+*.suo
+*.sdf
+*.opensdf
+*.vcxproj.user
+opengl/freeglut/msvc/freeglut_static.dir/
+opengl/freeglut/msvc/lib/
+opengl/glew/bin/
+opengl/glew/build/vc12/tmp/
+opengl/glew/lib/
+x64/
