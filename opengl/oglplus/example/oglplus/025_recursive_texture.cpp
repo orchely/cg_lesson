@@ -83,7 +83,7 @@ public:
 	 , width(tex_side)
 	 , height(tex_side)
 	{
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix, ModelMatrix;"
 			"in vec4 Position;"
@@ -101,10 +101,10 @@ public:
 			"	vertTexCoord = TexCoord;"
 			"	gl_Position = ProjectionMatrix * CameraMatrix * gl_Position;"
 			"}"
-		);
+		));
 		vs.Compile();
 
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"uniform sampler2D TexUnit;"
 			"in vec3 vertNormal;"
@@ -118,7 +118,7 @@ public:
 			"	float i = 0.6 + max(d, 0.0);"
 			"	fragColor = texture(TexUnit, vertTexCoord)*i;"
 			"}"
-		);
+		));
 		fs.Compile();
 
 		prog.AttachShader(vs);

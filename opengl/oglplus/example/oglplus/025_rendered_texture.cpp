@@ -98,7 +98,7 @@ public:
 	 , width(tex_side)
 	 , height(tex_side)
 	{
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix, ModelMatrix;"
 			"in vec4 Position;"
@@ -116,10 +116,10 @@ public:
 			"	vertTexCoord = TexCoord;"
 			"	gl_Position = ProjectionMatrix * CameraMatrix * gl_Position;"
 			"}"
-		);
+		));
 		vs.Compile();
 
-		cube_fs.Source(
+		cube_fs.Source(StrCRef(
 			"#version 330\n"
 			"uniform sampler2D TexUnit;"
 			"in vec3 vertNormal;"
@@ -133,7 +133,7 @@ public:
 			"	float i = 0.6 + max(d, 0.0);"
 			"	fragColor = texture(TexUnit, vertTexCoord)*i;"
 			"}"
-		);
+		));
 		cube_fs.Compile();
 
 		cube_prog.AttachShader(vs);
@@ -179,7 +179,7 @@ public:
 		Uniform<GLint>(cube_prog, "TexUnit").Set(0);
 		Uniform<Vec3f>(cube_prog, "LightPos").Set(Vec3f(4.0f, 4.0f, -8.0f));
 
-		torus_fs.Source(
+		torus_fs.Source(StrCRef(
 			"#version 330\n"
 			"in vec3 vertNormal;"
 			"in vec3 vertLight;"
@@ -198,7 +198,7 @@ public:
 			"	float c = (0.4 + max(d, 0.0))*(1-i/2);"
 			"	fragColor = vec4(c, c, c, 1.0);"
 			"}"
-		);
+		));
 		torus_fs.Compile();
 
 		torus_prog.AttachShader(vs);

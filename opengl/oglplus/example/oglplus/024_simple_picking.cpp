@@ -65,7 +65,7 @@ public:
 	 , fs(ShaderType::Fragment, ObjectDesc("Fragment"))
 	{
 		// Set the vertex shader source
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix;"
 			"in vec4 Position;"
@@ -92,11 +92,11 @@ public:
 			"	);"
 			"	vertInstanceID = gl_InstanceID;"
 			"}"
-		);
+		));
 		vs.Compile();
 
 		// Set the geometry shader source
-		gs.Source(
+		gs.Source(StrCRef(
 			"#version 330\n"
 			"layout(triangles) in;"
 			"layout(points, max_vertices = 1) out;"
@@ -163,11 +163,11 @@ public:
 			"		EndPrimitive();"
 			"	}"
 			"}"
-		);
+		));
 		gs.Compile();
 
 		// set the fragment shader source
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"flat in int vertInstanceID;"
 			"in vec3 vertColor;"
@@ -179,7 +179,7 @@ public:
 			"		fragColor = vec4(1.0, 1.0, 1.0, 1.0);"
 			"	else fragColor = vec4(vertColor, 1.0);"
 			"}"
-		);
+		));
 		fs.Compile();
 
 		// attach the shaders to the picking program

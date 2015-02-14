@@ -64,7 +64,7 @@ public:
 	 , model_matrix(prog, "ModelMatrix")
 	{
 		// Set the vertex shader source
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix, ModelMatrix;"
 			"in vec4 Position;"
@@ -95,12 +95,12 @@ public:
 			"	);"
 			"	gl_Position = ProjectionMatrix * CameraMatrix * gl_Position;"
 			"}"
-		);
+		));
 		// compile it
 		vs.Compile();
 
 		// set the fragment shader source
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"uniform samplerCube TexUnit;"
 			"in vec3 vertNormal;"
@@ -129,7 +129,7 @@ public:
 			"		1.0"
 			"	);"
 			"}"
-		);
+		));
 		// compile it
 		fs.Compile();
 

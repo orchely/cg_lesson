@@ -65,7 +65,7 @@ public:
 	 , model_matrix(prog, "ModelMatrix")
 	{
 		// Set the vertex shader source and compile it
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix, ModelMatrix;"
 			"in vec4 Position;"
@@ -83,10 +83,10 @@ public:
 			"	vertTexCoord = TexCoord;"
 			"	gl_Position = ProjectionMatrix * CameraMatrix * gl_Position;"
 			"}"
-		).Compile();
+		)).Compile();
 
 		// set the fragment shader source and compile it
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"uniform sampler2D TexUnit;"
 			"in vec3 vertNormal;"
@@ -103,7 +103,7 @@ public:
 			"	float i = 0.2 + 3.2*max(d, 0.0);"
 			"	fragColor = texture(TexUnit, vertTexCoord)*i;"
 			"}"
-		).Compile();
+		)).Compile();
 
 		// attach the shaders to the program
 		prog.AttachShader(vs).AttachShader(fs);

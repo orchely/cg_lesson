@@ -41,7 +41,7 @@ public:
 		// Vertex shader
 		VertexShader vs;
 		// Set the vertex shader source and compile it
-		vs.Source(" \
+		vs.Source(StrCRef(" \
 			#version 330\n \
 			uniform mat2 ZoomMatrix; \
 			in vec2 Position; \
@@ -51,12 +51,12 @@ public:
 				vertCoord = ZoomMatrix * Position; \
 				gl_Position = vec4(Position, 0.0, 1.0); \
 			} \
-		").Compile();
+		")).Compile();
 
 		// Fragment shader
 		FragmentShader fs;
 		// set the fragment shader source and compile it
-		fs.Source(" \
+		fs.Source(StrCRef(" \
 			#version 330\n \
 			in vec2 vertCoord; \
 			uniform vec3 Color1, Color2; \
@@ -106,7 +106,7 @@ public:
 					1.0 \
 				); \
 			} \
-		").Compile();
+		")).Compile();
 
 		// attach the shaders to the program, link and use it
 		prog.AttachShader(vs).AttachShader(fs).Link().Use();

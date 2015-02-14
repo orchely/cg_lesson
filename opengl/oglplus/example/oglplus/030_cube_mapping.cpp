@@ -195,7 +195,7 @@ public:
 	)
 	{
 		// Set the vertex shader source
-		sphere_vs.Source(
+		sphere_vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform float Time;"
 			"uniform mat4 CameraMatrix, ProjectionMatrix;"
@@ -242,10 +242,10 @@ public:
 			"		CameraMatrix *"
 			"		gl_Position;"
 			"}"
-		);
+		));
 
 		// set the fragment shader source
-		sphere_fs.Source(
+		sphere_fs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 CameraMatrix;"
 			"uniform samplerCube CubeTex;"
@@ -274,7 +274,7 @@ public:
 			"		1.0"
 			"	);"
 			"}"
-		);
+		));
 		// attach the shaders to the program
 		sphere_prog.AttachShader(sphere_vs);
 		sphere_prog.AttachShader(sphere_fs);
@@ -343,7 +343,7 @@ public:
 		}
 
 		// Set the vertex shader source
-		cube_vs.Source(
+		cube_vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix;"
 			"uniform vec4 LightPos;"
@@ -367,10 +367,10 @@ public:
 			"		CameraMatrix *"
 			"		gl_Position;"
 			"}"
-		);
+		));
 
 		// set the fragment shader source
-		cube_fs.Source(
+		cube_fs.Source(StrCRef(
 			"#version 330\n"
 			"in vec3 vertColor;"
 			"in vec3 vertNormal;"
@@ -386,7 +386,7 @@ public:
 			"	float i = 0.1 + 4.2*max(d, 0.0);"
 			"	fragColor = vec4(vertColor*i, 1.0);"
 			"}"
-		);
+		));
 
 		// attach the shaders to the program
 		cube_prog.AttachShader(cube_vs);
@@ -401,7 +401,7 @@ public:
 		cube_offset.BindTo("Offset");
 
 		// Set the vertex shader source
-		cmap_vs.Source(
+		cmap_vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform vec4 LightPos;"
 			"uniform vec3 Offset;"
@@ -420,10 +420,10 @@ public:
 			"	tempNormal = Normal;"
 			"	tempLight = LightPos.xyz - gl_Position.xyz;"
 			"}"
-		);
+		));
 
 		// Set the geometry shader source
-		cmap_gs.Source(
+		cmap_gs.Source(StrCRef(
 			"#version 330\n"
 			"layout(triangles) in;"
 			"layout(triangle_strip, max_vertices = 18) out;"
@@ -487,7 +487,7 @@ public:
 			"		EndPrimitive();"
 			"	}"
 			"}"
-		);
+		));
 
 		// attach the shaders to the program
 		cmap_prog.AttachShader(cmap_vs);

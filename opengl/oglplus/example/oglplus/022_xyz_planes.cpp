@@ -109,7 +109,7 @@ public:
 
 		ShaderInclude config_glsl("/config.glsl", config.str());
 
-		torus_vs.Source(
+		torus_vs.Source(StrCRef(
 			"#version 330\n"
 			"#extension GL_ARB_shading_language_include : enable\n"
 			"#include <config.glsl>\n"
@@ -137,9 +137,9 @@ public:
 			"		CameraMatrix *"
 			"		gl_Position;"
 			"}"
-		);
+		));
 
-		torus_fs.Source(
+		torus_fs.Source(StrCRef(
 			"#version 330\n"
 			"in vec2 vertTexCoord;"
 			"out vec4 fragColor;"
@@ -151,7 +151,7 @@ public:
 			"	) % 2;"
 			"	fragColor = vec4(1-i/2, 1-i/2, 1-i/2, 1.0);"
 			"}"
-		);
+		));
 
 		torus_prog.AttachShader(torus_vs);
 		torus_prog.AttachShader(torus_fs);
@@ -187,7 +187,7 @@ public:
 			attr.Enable();
 		}
 
-		plane_vs.Source(
+		plane_vs.Source(StrCRef(
 			"#version 330\n"
 			"#extension GL_ARB_shading_language_include : enable\n"
 			"#include <config.glsl>\n"
@@ -216,9 +216,9 @@ public:
 			"		0.4*Position.xyz"
 			"	);"
 			"}"
-		).CompileInclude("/");
+		)).CompileInclude("/");
 
-		plane_fs.Source(
+		plane_fs.Source(StrCRef(
 			"#version 330\n"
 			"in vec3 vertColor;"
 			"out vec4 fragColor;"
@@ -226,7 +226,7 @@ public:
 			"{"
 			"	fragColor = vec4(vertColor, 0.7);"
 			"}"
-		).Compile();
+		)).Compile();
 
 		plane_prog.AttachShader(plane_vs);
 		plane_prog.AttachShader(plane_fs);

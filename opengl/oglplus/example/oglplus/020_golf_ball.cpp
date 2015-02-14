@@ -121,7 +121,7 @@ public:
 		// This shader will be used in transform fedback mode
 		// to transform the vertices used to "cut out the holes"
 		// the same way the sphere is transformed
-		vs_tfb.Source(
+		vs_tfb.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 CameraMatrix, ModelMatrix;"
 			"uniform float Diameter;"
@@ -135,7 +135,7 @@ public:
 			"		vec4(Hole * (1.0 + 0.5 * Diameter), 0.0)"
 			"	).xyz;"
 			"}"
-		);
+		));
 		// compile, setup transform feedback output variables
 		// link and use the program
 		vs_tfb.Compile();
@@ -174,7 +174,7 @@ public:
 		);
 
 		// Set the vertex shader source
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix, ModelMatrix;"
 			"in vec4 Position;"
@@ -189,12 +189,12 @@ public:
 			"	vertLight = LightPos-gl_Position.xyz;"
 			"	gl_Position = ProjectionMatrix * CameraMatrix * gl_Position;"
 			"}"
-		);
+		));
 		// compile it
 		vs.Compile();
 
 		// set the fragment shader source
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"in vec3 vertNormal;"
 			"in vec3 vertLight;"
@@ -228,7 +228,7 @@ public:
 			"	i = 0.2+max(i*2.5, 0.0);"
 			"	fragColor = vec4(i, i, i, 1.0);"
 			"}"
-		);
+		));
 		// compile it
 		fs.Compile();
 

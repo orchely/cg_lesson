@@ -38,7 +38,7 @@ private:
 	static Program make_prog(void)
 	{
 		VertexShader vs;
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"in vec4 Position;"
 			"in vec3 Normal;"
@@ -55,11 +55,11 @@ private:
 			"	vertLight = LightPos - gl_Position.xyz;"
 			"	gl_Position = ProjectionMatrix * CameraMatrix * gl_Position;"
 			"}"
-		);
+		));
 		vs.Compile();
 
 		FragmentShader fs;
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"in vec3 vertColor;"
 			"in vec3 vertNormal;"
@@ -72,7 +72,7 @@ private:
 			"	float i = 0.2 + max(d*3.2, 0.0);"
 			"	fragColor = vec4(vertColor*i, 1.0);"
 			"}"
-		);
+		));
 		fs.Compile();
 
 		Program prog;

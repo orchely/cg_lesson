@@ -91,7 +91,7 @@ public:
 	 , height(600)
 	 , tex_size_div(2)
 	{
-		plane_vs.Source(
+		plane_vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform vec3 LightPosition;"
 			"uniform mat4 ProjectionMatrix, CameraMatrix, ModelMatrix;"
@@ -105,10 +105,10 @@ public:
 			"	gl_Position = ProjectionMatrix * CameraMatrix * gl_Position;"
 			"	vertTexCoord = gl_Position;"
 			"}"
-		);
+		));
 		plane_vs.Compile();
 
-		plane_fs.Source(
+		plane_fs.Source(StrCRef(
 			"#version 330\n"
 			"uniform sampler2DRect ReflectTex;"
 			"uniform vec3 Normal;"
@@ -137,7 +137,7 @@ public:
 			"	}"
 			"	fragColor = color*intensity;"
 			"}"
-		);
+		));
 		plane_fs.Compile();
 
 		plane_prog.AttachShader(plane_vs);
@@ -191,7 +191,7 @@ public:
 				0
 			);
 
-		shape_vs.Source(
+		shape_vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform vec3 LightPosition;"
 			"uniform mat4 ProjectionMatrix, ModelMatrix, CameraMatrix;"
@@ -215,10 +215,10 @@ public:
 			"	vertColor = vec3(1, 1, 1) - vertNormal;"
 			"	gl_Position = ProjectionMatrix * CameraMatrix * gl_Position;"
 			"}"
-		);
+		));
 		shape_vs.Compile();
 
-		shape_fs.Source(
+		shape_fs.Source(StrCRef(
 			"#version 330\n"
 			"in vec3 vertNormal;"
 			"in vec3 vertLightDir;"
@@ -244,7 +244,7 @@ public:
 			"		(lt + vertColor)*pow(max(2.5*d, 0.0), 3) + "
 			"		lt * pow(max(s, 0.0), 64);"
 			"}"
-		);
+		));
 		shape_fs.Compile();
 
 		shape_prog.AttachShader(shape_vs);

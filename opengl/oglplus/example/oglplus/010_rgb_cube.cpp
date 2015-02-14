@@ -42,7 +42,7 @@ public:
 	CubeExample(void)
 	{
 		// Set the vertex shader source
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix;"
 			"in vec4 Position;"
@@ -55,13 +55,13 @@ public:
 			"		CameraMatrix *"
 			"		Position;"
 			"}"
-		);
+		));
 		// compile it
 		vs.Compile();
 
 		// set the fragment shader source
 		// (uses the absolute value of normal as color)
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"in vec3 vertNormal;"
 			"out vec4 fragColor;"
@@ -69,7 +69,7 @@ public:
 			"{"
 			"	fragColor = vec4(abs(vertNormal), 1.0);"
 			"}"
-		);
+		));
 		// compile it
 		fs.Compile();
 

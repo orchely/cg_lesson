@@ -149,7 +149,7 @@ private:
 	static Program make_prog(void)
 	{
 		VertexShader vs;
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 CameraMatrix;"
 			"in vec4 Position;"
@@ -160,11 +160,11 @@ private:
 			"	gl_Position = CameraMatrix * Position;"
 			"	vertAge = Age;"
 			"}"
-		);
+		));
 		vs.Compile();
 
 		GeometryShader gs;
-		gs.Source(
+		gs.Source(StrCRef(
 			"#version 330\n"
 			"layout(points) in;"
 			"layout(triangle_strip, max_vertices = 4) out;"
@@ -193,11 +193,11 @@ private:
 			"	}"
 			"	EndPrimitive();"
 			"}"
-		);
+		));
 		gs.Compile();
 
 		FragmentShader fs;
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"in float geomAge;"
 			"out vec4 fragColor;"
@@ -210,7 +210,7 @@ private:
 			"		1.0 - geomAge"
 			"	);"
 			"}"
-		);
+		));
 		fs.Compile();
 
 		Program prog;

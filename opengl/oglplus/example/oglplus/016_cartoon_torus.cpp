@@ -38,7 +38,7 @@ private:
 	static Program make_prog(void)
 	{
 		VertexShader vs;
-		vs.Source(
+		vs.Source(StrCRef(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix, ModelMatrix;"
 			"in vec4 Position;"
@@ -53,10 +53,10 @@ private:
 			"		ModelMatrix *"
 			"		Position;"
 			"}"
-		).Compile();
+		))).Compile();
 
 		FragmentShader fs;
-		fs.Source(
+		fs.Source(StrCRef(StrCRef(
 			"#version 330\n"
 			"in vec3 vertNormal;"
 			"out vec4 fragColor;"
@@ -77,7 +77,7 @@ private:
 			"	else"
 			"		fragColor = vec4(0.3, 0.2, 0.1, 1.0);"
 			"}"
-		).Compile();
+		))).Compile();
 
 		Program prog;
 		prog << vs << fs;

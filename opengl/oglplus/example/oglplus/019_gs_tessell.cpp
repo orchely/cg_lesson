@@ -59,7 +59,7 @@ public:
 	 , camera_matrix(prog)
 	 , model_matrix(prog)
 	{
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 
 			"in vec4 Position;"
@@ -68,10 +68,10 @@ public:
 			"{"
 			"	gl_Position = Position;"
 			"}"
-		);
+		));
 		vs.Compile();
 
-		gs.Source(
+		gs.Source(StrCRef(
 			"#version 330\n"
 			"layout (triangles) in;"
 			"layout (triangle_strip, max_vertices = 48) out;"
@@ -175,10 +175,10 @@ public:
 			"		TessLevel"
 			"	);"
 			"}"
-		);
+		));
 		gs.Compile();
 
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 
 			"noperspective in vec3 geomDist;"
@@ -204,7 +204,7 @@ public:
 
 			"	fragColor = mix(FaceColor, EdgeColor, EdgeAlpha);"
 			"}"
-		);
+		));
 		fs.Compile();
 
 		prog.AttachShader(vs);

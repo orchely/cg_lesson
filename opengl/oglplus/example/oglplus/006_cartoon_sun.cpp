@@ -43,7 +43,7 @@ public:
 	RectangleExample(void)
 	{
 		// Set the vertex shader source and compile it
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"in vec2 Position;"
 			"out vec2 vertPos;"
@@ -52,10 +52,10 @@ public:
 			"	gl_Position = vec4(Position, 0.0, 1.0);"
 			"	vertPos = gl_Position.xy;"
 			"}"
-		).Compile();
+		)).Compile();
 
 		// set the fragment shader source and compile it
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"uniform float Time;"
 			"uniform vec2 SunPos;"
@@ -74,7 +74,7 @@ public:
 			"	else"
 			"		fragColor = mix(Sky1, Sky2, l);"
 			"}"
-		).Compile();
+		)).Compile();
 
 		// attach the shaders to the program
 		prog.AttachShader(vs);

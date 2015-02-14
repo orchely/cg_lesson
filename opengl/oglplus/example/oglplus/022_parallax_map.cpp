@@ -42,7 +42,7 @@ private:
 	static Program make(void)
 	{
 		Shader vs(ShaderType::Vertex);
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix, ModelMatrix;"
 			"uniform vec3 LightPos;"
@@ -91,10 +91,10 @@ private:
 			"	gl_Position = ProjectionMatrix *"
 			"		EyePos;"
 			"}"
-		).Compile();
+		)).Compile();
 
 		Shader fs(ShaderType::Fragment);
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"uniform sampler2D BumpTex;"
 			"uniform int BumpTexWidth;"
@@ -153,7 +153,7 @@ private:
 			"	float i = 0.1 + 2.5*max(d, 0.0);"
 			"	fragColor = vec4(c*i, 1.0);"
 			"}"
-		).Compile();
+		)).Compile();
 
 		Program prog;
 		prog.AttachShader(vs).AttachShader(fs);

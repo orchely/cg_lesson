@@ -60,7 +60,7 @@ public:
 	 , model_matrix(prog)
 	{
 		// Set the vertex shader source and compile it
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix, ModelMatrix;"
 			"in vec4 Position;"
@@ -75,10 +75,10 @@ public:
 			"		ModelMatrix *"
 			"		Position;"
 			"}"
-		).Compile();
+		)).Compile();
 
 		// set the fragment shader source and compile it
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"in vec2 vertTexCoord;"
 			"out vec4 fragColor;"
@@ -94,7 +94,7 @@ public:
 			"		i"
 			"	);"
 			"}"
-		).Compile();
+		)).Compile();
 
 		// attach the shaders to the program
 		prog.AttachShader(vs).AttachShader(fs);

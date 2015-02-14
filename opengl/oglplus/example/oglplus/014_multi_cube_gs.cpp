@@ -61,17 +61,17 @@ public:
 	 , camera_matrix(prog)
 	{
 		// Set the vertex shader source and compile it
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"in vec4 Position;"
 			"void main(void)"
 			"{"
 			"	gl_Position = Position;"
 			"}"
-		).Compile();
+		)).Compile();
 
 		// Set the geometry shader source and compile it
-		gs.Source(
+		gs.Source(StrCRef(
 			"#version 330\n"
 			"layout(triangles) in;"
 			"layout(triangle_strip, max_vertices = 108) out;"
@@ -109,10 +109,10 @@ public:
 			"		EndPrimitive();"
 			"	}"
 			"}"
-		).Compile();
+		)).Compile();
 
 		// set the fragment shader source and compile it
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"in vec3 vertColor;"
 			"out vec4 fragColor;"
@@ -120,7 +120,7 @@ public:
 			"{"
 			"	fragColor = vec4(vertColor, 1.0);"
 			"}"
-		).Compile();
+		)).Compile();
 
 		// attach the shaders to the program
 		prog << vs << gs << fs;

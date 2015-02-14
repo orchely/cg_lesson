@@ -95,7 +95,7 @@ public:
 		assert(positions.size() == sizes.size());
 		std::srand(123456);
 
-		light_vs.Source(
+		light_vs.Source(StrCRef(
 			"#version 330\n"
 			"in vec3 Position;"
 			"uniform vec3 LightPos;"
@@ -108,16 +108,16 @@ public:
 			"		CameraMatrix*"
 			"		vec4(Position*s + LightPos, 1.0);"
 			"}"
-		).Compile();
+		)).Compile();
 
-		light_fs.Source(
+		light_fs.Source(StrCRef(
 			"#version 330\n"
 			"out vec4 fragLight;"
 			"void main(void)"
 			"{"
 			"	fragLight = vec4(1.0, 1.0, 1.0, 1.0);"
 			"}"
-		).Compile();
+		)).Compile();
 
 		light_prog << light_vs << light_fs;
 		light_prog.Link().Use();
@@ -132,7 +132,7 @@ public:
 			(light_prog|"Position").Setup<GLfloat>(n_per_vertex).Enable();
 		}
 
-		cloud_vs.Source(
+		cloud_vs.Source(StrCRef(
 			"#version 330\n"
 			"in vec4 Position;"
 			"in float Size;"
@@ -152,9 +152,9 @@ public:
 			"		1.0"
 			"	);"
 			"}"
-		).Compile();
+		)).Compile();
 
-		cloud_gs.Source(
+		cloud_gs.Source(StrCRef(
 			"#version 330\n"
 			"layout(points) in;"
 			"layout(triangle_strip, max_vertices = 4) out;"
@@ -191,9 +191,9 @@ public:
 			"	}"
 			"	EndPrimitive();"
 			"}"
-		).Compile();
+		)).Compile();
 
-		cloud_fs.Source(
+		cloud_fs.Source(StrCRef(
 			"#version 330\n"
 			"uniform sampler3D CloudTex;"
 			"in vec3 geomTexCoord;"
@@ -222,7 +222,7 @@ public:
 			"	float i = mix(0.2, 1.0, o);"
 			"	fragColor = vec4(i, i, i, a);"
 			"}"
-		).Compile();
+		)).Compile();
 
 		cloud_prog << cloud_vs << cloud_gs << cloud_fs;
 		cloud_prog.Link().Use();

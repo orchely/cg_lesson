@@ -39,20 +39,20 @@ public:
 	{
 		VertexShader vs;
 		// Set the vertex shader source
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"in vec4 Position;"
 			"void main(void)"
 			"{"
 			"	gl_Position = Position;"
 			"}"
-		);
+		));
 		// compile it
 		vs.Compile();
 
 		GeometryShader gs;
 		// Set the geometry shader source
-		gs.Source(
+		gs.Source(StrCRef(
 			"#version 330\n"
 			"layout(lines) in;"
 			"layout(triangle_strip, max_vertices = 4) out;"
@@ -69,20 +69,20 @@ public:
 			"	EmitVertex();"
 			"	EndPrimitive();"
 			"}"
-		);
+		));
 		// compile it
 		gs.Compile();
 
 		FragmentShader fs;
 		// set the fragment shader source
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"out vec4 fragColor;"
 			"void main(void)"
 			"{"
 			"	fragColor = vec4(0.0, 0.0, 0.0, 1.0);"
 			"}"
-		);
+		));
 		// compile it
 		fs.Compile();
 

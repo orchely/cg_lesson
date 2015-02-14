@@ -65,7 +65,7 @@ public:
 	 , inst_count(32)
 	{
 		// Set the vertex shader source
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix, ModelMatrix;"
 			"uniform vec3 LightPos;"
@@ -109,12 +109,12 @@ public:
 			"		ScaleMatrix *"
 			"		gl_Position;"
 			"}"
-		);
+		));
 		// compile it
 		vs.Compile();
 
 		// set the fragment shader source
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"in float vertMult;"
 			"in vec3 vertColor;"
@@ -144,7 +144,7 @@ public:
 			"		(2.5 + 1.5*d + 1.5*s) / InstCount"
 			"	);"
 			"}"
-		);
+		));
 		// compile it
 		fs.Compile();
 

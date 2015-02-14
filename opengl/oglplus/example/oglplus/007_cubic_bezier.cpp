@@ -54,17 +54,17 @@ public:
 	 : color(prog, "Color")
 	{
 		// Set the vertex shader source and compile it
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"in vec4 Position;"
 			"void main(void)"
 			"{"
 			"	gl_Position = Position;"
 			"}"
-		);
+		));
 
 		// set the fragment shader source and compile it
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"out vec4 fragColor;"
 			"uniform vec3 Color;"
@@ -72,7 +72,7 @@ public:
 			"{"
 			"	fragColor = vec4(Color, 1.0);"
 			"}"
-		);
+		));
 
 		// attach the shaders to the program
 		// link and use it

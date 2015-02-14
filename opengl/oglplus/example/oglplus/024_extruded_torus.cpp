@@ -35,7 +35,7 @@ private:
 	static Program make_transf_prog(void)
 	{
 		VertexShader vs;
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ModelMatrix;"
 			"in vec4 Position;"
@@ -52,11 +52,11 @@ private:
 			"	vertNormal = (ModelMatrix*vec4(Normal,0.0)).xyz;"
 			"	vertTexCoord = TexCoord;"
 			"}"
-		);
+		));
 		vs.Compile();
 
 		GeometryShader gs;
-		gs.Source(
+		gs.Source(StrCRef(
 			"#version 330\n"
 			"layout(triangles) in;"
 			"layout(triangle_strip, max_vertices = 15) out;"
@@ -139,7 +139,7 @@ private:
 			"	}"
 			"	EndPrimitive();"
 			"}"
-		);
+		));
 		gs.Compile();
 
 		Program prog;
@@ -157,7 +157,7 @@ private:
 	static Program make_face_prog(void)
 	{
 		FragmentShader fs;
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"in vec3 geomNormal;"
 			"in vec3 geomLight;"
@@ -186,7 +186,7 @@ private:
 			"	}"
 			"	fragColor = vec4(color, 1.0);"
 			"}"
-		);
+		));
 		fs.Compile();
 
 		Program prog;
@@ -204,14 +204,14 @@ private:
 	static Program make_frame_prog(void)
 	{
 		FragmentShader fs;
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 			"out vec4 fragColor;"
 			"void main(void)"
 			"{"
 			"	fragColor = vec4(0.2, 0.1, 0.0, 1.0);"
 			"}"
-		);
+		));
 		fs.Compile();
 
 		Program prog;

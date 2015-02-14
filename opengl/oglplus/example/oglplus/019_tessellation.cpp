@@ -68,7 +68,7 @@ public:
 	 , view_position(prog, "ViewPosition")
 	 , viewport_dimensions(prog, "ViewportDimensions")
 	{
-		vs.Source(
+		vs.Source(StrCRef(
 			"#version 330\n"
 
 			"uniform vec3 ViewPosition;"
@@ -83,10 +83,10 @@ public:
 			"	vertPosition = Position;"
 			"	vertDistance = length(ViewPosition - vertPosition);"
 			"}"
-		);
+		));
 		vs.Compile();
 
-		cs.Source(
+		cs.Source(StrCRef(
 			"#version 330\n"
 			"#extension ARB_tessellation_shader : enable\n"
 
@@ -128,10 +128,10 @@ public:
 			"		)*0.5);"
 			"	}"
 			"}"
-		);
+		));
 		cs.Compile();
 
-		es.Source(
+		es.Source(StrCRef(
 			"#version 330\n"
 			"#extension ARB_tessellation_shader : enable\n"
 
@@ -162,10 +162,10 @@ public:
 			"		CameraMatrix *"
 			"		tempPosition;"
 			"}"
-		);
+		));
 		es.Compile();
 
-		gs.Source(
+		gs.Source(StrCRef(
 			"#version 330\n"
 			"layout (triangles) in;"
 			"layout (triangle_strip, max_vertices = 3) out;"
@@ -231,10 +231,10 @@ public:
 			"	}"
 			"	EndPrimitive();"
 			"}"
-		);
+		));
 		gs.Compile();
 
-		fs.Source(
+		fs.Source(StrCRef(
 			"#version 330\n"
 
 			"noperspective in vec3 geomDist;"
@@ -260,7 +260,7 @@ public:
 
 			"	fragColor = mix(FaceColor, EdgeColor, EdgeAlpha);"
 			"}"
-		);
+		));
 		fs.Compile();
 
 		prog.AttachShader(vs);

@@ -120,7 +120,7 @@ public:
 	 , width(800)
 	 , height(600)
 	{
-		main_vs.Source(
+		main_vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform mat4 ProjectionMatrix, CameraMatrix, ModelMatrix;"
 			"uniform vec3 LightPos;"
@@ -135,12 +135,12 @@ public:
 			"	vertNormal = normalize(mat3(ModelMatrix)*Normal);"
 			"	gl_Position = ProjectionMatrix * CameraMatrix * gl_Position;"
 			"}"
-		);
+		));
 		// compile it
 		main_vs.Compile();
 
 		// set the fragment shader source
-		main_fs.Source(
+		main_fs.Source(StrCRef(
 			"#version 330\n"
 			"uniform vec3 AmbientColor, DiffuseColor;"
 			"in vec3 vertLightDir;"
@@ -159,7 +159,7 @@ public:
 			"		1.0"
 			"	);"
 			"}"
-		);
+		));
 		// compile it
 		main_fs.Compile();
 
@@ -205,7 +205,7 @@ public:
 
 		Uniform<Vec3f>(main_prog, "LightPos").Set(30.0, 50.0, 20.0);
 
-		dof_vs.Source(
+		dof_vs.Source(StrCRef(
 			"#version 330\n"
 			"uniform uint ViewportWidth, ViewportHeight;"
 			"in vec4 Position;"
@@ -218,10 +218,10 @@ public:
 			"		(Position.y*0.5 + 0.5)*ViewportHeight"
 			"	);"
 			"}"
-		);
+		));
 		dof_vs.Compile();
 
-		dof_fs.Source(
+		dof_fs.Source(StrCRef(
 			"#version 330\n"
 			"uniform sampler2DRect ColorTex;"
 			"uniform sampler2DRect DepthTex;"
@@ -249,7 +249,7 @@ public:
 			"	}"
 			"	fragColor = vec4(color * inv_nsam , 1.0);"
 			"}"
-		);
+		));
 		dof_fs.Compile();
 
 		dof_prog.AttachShader(dof_vs);
