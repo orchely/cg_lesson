@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F0626A23-46FD-4C59-A6CE-2009B1A73D1C}</ProjectGuid>
+    <ProjectGuid>{79B61946-A61F-439F-8718-6979E8F616D5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>_01_animating_color</RootNamespace>
+    <RootNamespace>_07_geometry_shader</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -85,7 +85,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\common\main.cpp" />
-    <ClCompile Include="animating_color.cpp" />
+    <ClCompile Include="geometry_shader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
