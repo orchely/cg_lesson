@@ -8,4 +8,5 @@ opengl/freeglut/msvc/lib/
 opengl/glew/bin/
 opengl/glew/build/vc12/tmp/
 opengl/glew/lib/
+opengl/oglplus/_build/
 x64/
