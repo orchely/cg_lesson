@@ -160,7 +160,7 @@ public:
 	{
 		gl.Clear().ColorBuffer();
 		// draw the curve
-		gl.DrawArrays(PrimitiveType::LineStrip, 0, curve_n);
+		gl.DrawArrays(PrimitiveType::LineStrip, 0, static_cast<GLsizei>(curve_n));
 	}
 };
 

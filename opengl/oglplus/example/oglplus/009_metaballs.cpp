@@ -160,7 +160,7 @@ public:
 			.Image1D(
 				0,
 				InternalFormat::RGBA32F,
-				ball_paths.size(),
+				static_cast<GLsizei>(ball_paths.size()),
 				0,
 				Format::RGBA,
 				DataType::Float,
@@ -191,7 +191,7 @@ public:
 			Texture::Target::_1D,
 			0,
 			InternalFormat::RGBA32F,
-			metaball_count,
+			static_cast<GLsizei>(metaball_count),
 			0,
 			Format::RGBA,
 			DataType::Float,

@@ -248,7 +248,7 @@ public:
 			)
 		);
 
-		gl.DrawArrays(PrimitiveType::Points, 0, positions.size());
+		gl.DrawArrays(PrimitiveType::Points, 0, static_cast<GLsizei>(positions.size()));
 	}
 
 	bool Continue(double time)

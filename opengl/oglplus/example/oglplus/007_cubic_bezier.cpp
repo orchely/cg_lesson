@@ -130,16 +130,16 @@ public:
 		// draw the lines between control points
 		color.Set(Vec3f(0.9f, 0.9f, 0.2f));
 		gl.Bind(control);
-		gl.DrawArrays(PrimitiveType::LineStrip, 0, ctrl_n);
+		gl.DrawArrays(PrimitiveType::LineStrip, 0, static_cast<GLsizei>(ctrl_n));
 		// draw the curve
 		color.Set(Vec3f(0.1f, 0.1f, 0.1f));
 		gl.Bind(curve);
-		gl.DrawArrays(PrimitiveType::LineStrip, 0, curve_n);
+		gl.DrawArrays(PrimitiveType::LineStrip, 0, static_cast<GLsizei>(curve_n));
 		// draw the control points
 		color.Set(Vec3f(0.9f, 0.0f, 0.0f));
 		gl.Bind(control);
 		gl.PointSize(8.0);
-		gl.DrawArrays(PrimitiveType::Points, 0, ctrl_n);
+		gl.DrawArrays(PrimitiveType::Points, 0, static_cast<GLsizei>(ctrl_n));
 		gl.PointSize(1.0);
 	}
 };

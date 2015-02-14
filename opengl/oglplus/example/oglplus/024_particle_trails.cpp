@@ -94,7 +94,7 @@ public:
 		if(drag > 1.0) drag = 1.0;
 
 		// go through the existing particles
-		for(GLuint i=0, n=positions.size(); i!=n; ++i)
+		for(size_t i=0, n=positions.size(); i!=n; ++i)
 		{
 			// update the age
 			ages[i] += time_diff / lifetime;
@@ -337,10 +337,10 @@ public:
 		std::vector<float> depths(positions.size());
 		std::vector<GLuint> indices(positions.size());
 		// calculate the depths of the particles
-		for(GLuint i=0, n=positions.size(); i!=n; ++i)
+		for(size_t i=0, n=positions.size(); i!=n; ++i)
 		{
 			depths[i] = (cameraMatrix * Vec4f(positions[i], 1.0)).z();
-			indices[i] = i;
+			indices[i] = static_cast<GLuint>(i);
 		}
 
 		// sort the indices by the depths

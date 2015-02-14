@@ -219,7 +219,7 @@ public:
 			unsigned poffs = i*sstep;
 			Parameter t_sub = Parameter(0);
 			const Type* data = _points.data() + poffs;
-			unsigned size = _points.size() - poffs;
+			unsigned size = static_cast<unsigned int>(_points.size()) - poffs;
 			for(unsigned j=0; j!=n; ++j)
 			{
 				typedef math::Bezier<Type, Parameter, Order> b;

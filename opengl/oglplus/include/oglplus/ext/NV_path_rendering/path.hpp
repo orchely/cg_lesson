@@ -409,7 +409,7 @@ public:
 		OGLPLUS_GLFUNC(PathStringNV)(
 			_obj_name(),
 			GLenum(format),
-			path_string.size(),
+			static_cast<GLsizei>(path_string.size()),
 			static_cast<const void*>(path_string.c_str())
 		);
 		OGLPLUS_CHECK(

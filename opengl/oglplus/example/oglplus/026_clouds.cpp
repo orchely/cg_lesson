@@ -317,7 +317,7 @@ public:
 			cloud_tex[i].Bind(Texture::Target::_3D);
 			gl.DrawArraysInstanced(
 				PrimitiveType::Points,
-				i, 1,
+				static_cast<GLint>(i), 1,
 				samples
 			);
 		}

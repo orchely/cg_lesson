@@ -131,7 +131,7 @@ public:
 			GLenum(font_target),
 			(const void*)font_name,
 			GLbitfield(font_style),
-			char_codes.size(),
+			static_cast<GLsizei>(char_codes.size()),
 			GL_UTF8_NV,
 			(const void*)char_codes.c_str(),
 			GLenum(handle_missing_glyphs),

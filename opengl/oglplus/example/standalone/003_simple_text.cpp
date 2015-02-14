@@ -42,9 +42,9 @@ private:
 public:
 	TextExample(int /*argc*/, const char** /*argv*/)
 	 : text("OpenGL")
-	 , text_path(text.size())
+	 , text_path(static_cast<GLsizei>(text.size()))
 	 , glyph_indices(make_glyph_indices())
-	 , glyph_spacings(glyph_indices.size())
+	 , glyph_spacings(static_cast<GLsizei>(glyph_indices.size()))
 	{
 		using namespace oglplus;
 

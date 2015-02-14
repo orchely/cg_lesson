@@ -235,7 +235,7 @@ public:
 			GLenum(type),
 			id,
 			GLenum(severity),
-			message.size(),
+			static_cast<GLsizei>(message.size()),
 			message.c_str()
 		);
 		OGLPLUS_VERIFY_SIMPLE(DebugMessageInsertARB);
