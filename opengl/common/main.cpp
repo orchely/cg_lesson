@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include <cstring>
 #include <sstream>
 #include <iomanip>
 #include <Windows.h>
@@ -112,7 +111,7 @@ int APIENTRY WinMain(
 
 	glutCloseFunc(shutdown);
 	glutDisplayFunc(display);
-	glutIdleFunc([]{ glutPostRedisplay(); });
+	glutIdleFunc(glutPostRedisplay);
 
 	startup();
 	glutMainLoop();
