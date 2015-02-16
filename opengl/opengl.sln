@@ -66,6 +66,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "common\common.vcxproj", "{35433F33-36AF-4107-A1BD-CF13986868C6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "08_feeding_vertex_shader", "08_feeding_vertex_shader\08_feeding_vertex_shader.vcxproj", "{F5D8C80F-3056-4206-8DD0-3ADFB2F97460}"
+	ProjectSection(ProjectDependencies) = postProject
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4} = {664E6F0D-6784-4760-9565-D54F8EB1EDF4}
+		{35433F33-36AF-4107-A1BD-CF13986868C6} = {35433F33-36AF-4107-A1BD-CF13986868C6}
+		{DB591261-46E8-48F2-86ED-EC6BCB54299A} = {DB591261-46E8-48F2-86ED-EC6BCB54299A}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
