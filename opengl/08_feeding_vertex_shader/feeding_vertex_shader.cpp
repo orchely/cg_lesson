@@ -82,6 +82,7 @@ void render(double currentTime)
 
 void shutdown(void)
 {
+	glDisableVertexAttribArray(0);
 	glDeleteVertexArrays(1, &vertex_array_object);
 	glDeleteProgram(rendering_program);
 	glDeleteBuffers(1, &vertex_buffer);
