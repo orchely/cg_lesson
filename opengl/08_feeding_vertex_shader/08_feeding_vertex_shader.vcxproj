@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{40F994FB-3442-4B65-8B67-98DEDA7A0AE8}</ProjectGuid>
+    <ProjectGuid>{F5D8C80F-3056-4206-8DD0-3ADFB2F97460}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>_03_first_triangle</RootNamespace>
+    <RootNamespace>_08_feeding_vertex_shader</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -84,7 +84,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="first_triangle.cpp" />
+    <ClCompile Include="feeding_vertex_shader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
