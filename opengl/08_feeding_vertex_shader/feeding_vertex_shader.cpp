@@ -55,9 +55,9 @@ GLuint compile_shaders(void)
 void startup(void)
 {
 	static const float vertex_data[] = {
-		 0.25, -0.25, 0.5, 1.0,
-		-0.25, -0.25, 0.5, 1.0,
-		 0.25,  0.25, 0.5, 1.0
+		 0.25f, -0.25f, 0.5f, 1.0f,
+		-0.25f, -0.25f, 0.5f, 1.0f,
+		 0.25f,  0.25f, 0.5f, 1.0f
 	};
 
 	glGenBuffers(1, &vertex_buffer);
