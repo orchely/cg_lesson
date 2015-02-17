@@ -42,7 +42,7 @@ DWORD initializeGlut()
 	}
 	int c = argc;
 	glutInit(&c, argv);
-	//glutInitContextVersion(4, 3);
+	glutInitContextVersion(4, 3);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitContextFlags(GLUT_DEBUG);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
