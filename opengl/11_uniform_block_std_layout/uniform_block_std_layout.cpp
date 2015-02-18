@@ -265,11 +265,13 @@ void render(double currentTime)
 	checkGlError(__FILE__, __LINE__);
 
 	GLfloat colors[] = {
-		0.45f, 0.45f, 1.0f, 1.0f,
-		0.45f, 0.45f, 1.0f, 1.0f,
-		0.75f, 0.75f, 0.75f, 1.0f,
-		0.0f, 0.0f, 1.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 1.0f
+		0.45f,						// DiffuseCool
+		0.45f,						// DiffuseWarm
+		1.00f, 1.00f,				// padding
+		0.45f, 0.45f, 1.00f, 1.00f,	// SurfaceColor
+		0.75f, 0.75f, 0.75f, 1.00f,	// CoolColor
+		0.00f, 0.00f, 1.00f, 1.00f,	// WarmColor
+		0.00f, 1.00f, 0.00f, 1.00f	// padding
 	};
 
 	// We can use BufferData to upload our data to the shader,
