@@ -20,9 +20,9 @@ glm::mat4 model_view_matrix;
 glm::mat4 normal_matrix;
 glm::mat4 projection_matrix;
 
-GLuint model_view_matrix_location;
-GLuint normal_matrix_location;
-GLuint projection_matrix_location;
+GLint model_view_matrix_location;
+GLint normal_matrix_location;
+GLint projection_matrix_location;
 
 void checkGlError(const char *file, int line)
 {
@@ -182,9 +182,6 @@ void startup(void)
 	model_view_matrix = view * model;
 	normal_matrix = glm::transpose(glm::inverse(model_view_matrix));
 	projection_matrix = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-
-	while (glGetError() != GL_NO_ERROR)
-		;
 
 	rendering_program = compile_shaders();
 	glGenVertexArrays(1, &vertex_array_object);

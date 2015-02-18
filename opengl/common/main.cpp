@@ -64,7 +64,14 @@ end:
 GLenum initializeGlew()
 {
 	glewExperimental = GL_TRUE;
-	return glewInit();
+	GLenum result = glewInit();
+
+	// GLEW calls glGetString(GL_EXTENSIONS) internaly.
+	// This causes GL_INVALID_ENUM with OpenGL 3.2 (or later) contexts.
+	while (glGetError() == GL_INVALID_ENUM)
+		;
+
+	return result;
 }
 
 void display(void)
