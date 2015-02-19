@@ -13,8 +13,6 @@
 GLuint rendering_program;
 GLuint vertex_array_object;
 GLuint uniform_buffer;
-GLint offset;
-GLint single_size;
 
 glm::mat4 model_view_matrix;
 glm::mat4 normal_matrix;
@@ -115,11 +113,12 @@ GLuint compile_shaders(void)
 		"																							\n"
 		"layout(std140) uniform ColorBlock															\n"
 		"{																							\n"
-		"	float DiffuseCool;																		\n"
-		"	float DiffuseWarm;																		\n"
-		"	vec3  SurfaceColor;																		\n"
-		"	vec3  WarmColor;																		\n"
-		"	vec3  CoolColor;																		\n"
+		"//	Member				   base alignment	offset	aligned offset							\n"
+		"	float DiffuseCool;	// 4				0		0										\n"
+		"	float DiffuseWarm;	// 4				4		4										\n"
+		"	vec3  SurfaceColor;	// 16				8		16										\n"
+		"	vec3  WarmColor;	// 16				32		32										\n"
+		"	vec3  CoolColor;	// 16				48		48										\n"
 		"} colors;																					\n"
 		"																							\n"
 		"in VS_OUT																					\n"
@@ -170,6 +169,40 @@ GLuint compile_shaders(void)
 	return program;
 }
 
+void build_uniform_block()
+{
+	GLfloat colors[] = {
+		/*  0: DiffuseCool    */ 0.45f,
+		/*  4: DiffuseWarm    */ 0.45f,
+		/*  8: (padding)      */ 0.00f,
+		/* 12: (padding)      */ 0.00f,
+		/* 16: SurfaceColor.r */ 0.45f,
+		/* 20: SurfaceColor.g */ 0.45f,
+		/* 24: SurfaceColor.b */ 1.00f,
+		/* 28: (padding)      */ 0.00f,
+		/* 32: WarmColor.r    */ 0.75f,
+		/* 36: WarmColor.g    */ 0.75f,
+		/* 40: WarmColor.b    */ 0.75f,
+		/* 44: (padding)      */ 0.00f,
+		/* 48: CoolColor.r    */ 0.00f,
+		/* 52: CoolColor.g    */ 0.00f,
+		/* 56: CoolColor.b    */ 1.00f,
+		/* 60: (padding)      */ 0.00f
+	};
+
+	glGenBuffers(1, &uniform_buffer);
+	glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(colors), colors, GL_DYNAMIC_DRAW);
+	checkGlError(__FILE__, __LINE__);
+
+	GLuint uniform_block_index = glGetUniformBlockIndex(rendering_program, "ColorBlock");
+	checkGlError(__FILE__, __LINE__);
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniform_buffer);
+	glUniformBlockBinding(rendering_program, uniform_block_index, 0);
+	checkGlError(__FILE__, __LINE__);
+}
+
 void startup(void)
 {
 	float rotate_x = 0.0f;
@@ -200,41 +233,7 @@ void startup(void)
 	projection_matrix_location = glGetUniformLocation(rendering_program, "projection_matrix");
 	checkGlError(__FILE__, __LINE__);
 
-	// Update the uniforms using ARB_uniform_buffer_object
-	glGenBuffers(1, &uniform_buffer);
-
-	// There's only one uniform block here, the 'colors0' uniform block. 
-	// It contains the color info for the gooch shader.
-	GLuint uniform_block_index = glGetUniformBlockIndex(rendering_program, "ColorBlock");
-	checkGlError(__FILE__, __LINE__);
-
-	// We need to get the uniform block's size in order to back it with the
-	// appropriate buffer
-	GLsizei uniform_block_size;
-	glGetActiveUniformBlockiv(rendering_program, uniform_block_index, GL_UNIFORM_BLOCK_DATA_SIZE, &uniform_block_size);
-	checkGlError(__FILE__, __LINE__);
-
-	// Now we attach the buffer to UBO binding point 0...
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniform_buffer);
-	// And associate the uniform block to this binding point.
-	glUniformBlockBinding(rendering_program, uniform_block_index, 0);
-	checkGlError(__FILE__, __LINE__);
-
-	GLuint index;
-	GLchar* names[] = {
-		"ColorBlock.SurfaceColor",
-		"ColorBlock.WarmColor",
-		"ColorBlock.CoolColor",
-		"ColorBlock.DiffuseWarm",
-		"ColorBlock.DiffuseCool"
-	};
-
-	// To update a single uniform in a uniform block, we need to get its
-	// offset into the buffer.
-	glGetUniformIndices(rendering_program, 1, &names[2], &index);
-	glGetActiveUniformsiv(rendering_program, 1, &index, GL_UNIFORM_OFFSET, &offset);
-	glGetActiveUniformsiv(rendering_program, 1, &index, GL_UNIFORM_SIZE, &single_size);
-	checkGlError(__FILE__, __LINE__);
+	build_uniform_block();
 
 	glViewport(0, 0, 800, 600);
 	glEnable(GL_CULL_FACE);
@@ -261,24 +260,6 @@ void render(double currentTime)
 	glUniformMatrix4fv(projection_matrix_location, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 	checkGlError(__FILE__, __LINE__);
 
-	glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer);
-	checkGlError(__FILE__, __LINE__);
-
-	GLfloat colors[] = {
-		0.45f,						// DiffuseCool
-		0.45f,						// DiffuseWarm
-		1.00f, 1.00f,				// padding
-		0.45f, 0.45f, 1.00f, 1.00f,	// SurfaceColor
-		0.75f, 0.75f, 0.75f, 1.00f,	// CoolColor
-		0.00f, 0.00f, 1.00f, 1.00f,	// WarmColor
-		0.00f, 1.00f, 0.00f, 1.00f	// padding
-	};
-
-	// We can use BufferData to upload our data to the shader,
-	// since we know it's in the std140 layout
-	glBufferData(GL_UNIFORM_BUFFER, 80, colors, GL_DYNAMIC_DRAW);
-	//With a non-standard layout, we'd use BufferSubData for each uniform.
-	glBufferSubData(GL_UNIFORM_BUFFER, offset, single_size, &colors[8]);
 	//the teapot winds backwards
 	glutSolidTeapot(1.33);
 }
