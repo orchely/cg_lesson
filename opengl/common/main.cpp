@@ -8,6 +8,7 @@
 extern void startup();
 extern void render(double currentTime);
 extern void shutdown();
+extern void on_resize(int width, int height);
 
 LARGE_INTEGER freq;
 
@@ -118,6 +119,7 @@ int APIENTRY WinMain(
 
 	glutCloseFunc(shutdown);
 	glutDisplayFunc(display);
+	glutReshapeFunc(on_resize);
 	glutIdleFunc(glutPostRedisplay);
 
 	startup();
