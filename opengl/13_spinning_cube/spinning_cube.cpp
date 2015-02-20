@@ -190,6 +190,8 @@ void startup()
 
 void render(double currentTime)
 {
+	glViewport(0, 0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+
 	static const GLfloat green[] = { 0.0f, 0.25f, 0.0f, 1.0f };
 	glClearBufferfv(GL_COLOR, 0, green);
 
@@ -203,11 +205,11 @@ void render(double currentTime)
 	for (int i = 0; i < 24; i++) {
 		float pi = static_cast<float>(M_PI);
 		float t = static_cast<float>(currentTime);
-		float p = static_cast<float>(i) + t * pi * 0.1f; // phase
+		float p = static_cast<float>(i) + t * 0.3f; // phase
 		glm::mat4 mv_matrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -6.0f))
 							* glm::rotate(glm::mat4(), t * 45.0f / 360.0f * 2.0f * pi, glm::vec3(0.0f, 1.0f, 0.0f))
 							* glm::rotate(glm::mat4(), t * 21.0f / 360.0f * 2.0f * pi, glm::vec3(1.0f, 0.0f, 0.0f))
-							* glm::translate(glm::mat4(), glm::vec3(sinf(2.1f * p) * 0.5f, cosf(1.7f * p) * 0.5f, sinf(1.3f * p) * cosf(1.5f * p) * 2.0f));
+							* glm::translate(glm::mat4(), glm::vec3(sinf(2.1f * p) * 2.0f, cosf(1.7f * p) * 2.0f, sinf(1.3f * p) * cosf(1.5f * p) * 2.0f));
 
 		glUniformMatrix4fv(mv_location, 1, GL_FALSE, glm::value_ptr(mv_matrix));
 
@@ -218,7 +220,7 @@ void render(double currentTime)
 void on_resize(int width, int height)
 {
 	float aspect = static_cast<float>(width) / static_cast<float>(height);
-	proj_matrix = glm::perspective(50.9f, aspect, 0.1f, 1000.0f);
+	proj_matrix = glm::perspective(50.0f / 360.0f * 2.0f * static_cast<float>(M_PI), aspect, 0.1f, 1000.0f);
 }
 
 void shutdown()
