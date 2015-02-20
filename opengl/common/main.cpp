@@ -10,6 +10,7 @@ extern void render(double currentTime);
 extern void shutdown();
 extern void on_resize(int width, int height);
 
+LARGE_INTEGER t0;
 LARGE_INTEGER freq;
 
 DWORD initializeGlut()
@@ -79,7 +80,7 @@ void display(void)
 {
 	LARGE_INTEGER t;
 	QueryPerformanceCounter(&t);
-	double currentTime = static_cast<double>(t.QuadPart) / static_cast<double>(freq.QuadPart);
+	double currentTime = static_cast<double>(t.QuadPart - t0.QuadPart) / static_cast<double>(freq.QuadPart);
 	render(currentTime);
 	glutSwapBuffers();
 
@@ -104,6 +105,7 @@ int APIENTRY WinMain(
 	_In_     int       nCmdShow)
 {
 	QueryPerformanceFrequency(&freq);
+	QueryPerformanceCounter(&t0);
 
 	int result = initializeGlut();
 	if (result != ERROR_SUCCESS) {
