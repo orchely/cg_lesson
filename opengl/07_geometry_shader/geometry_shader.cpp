@@ -139,6 +139,10 @@ void render(double currentTime)
 	glDrawArrays(GL_PATCHES, 0, 3);
 }
 
+void on_resize(int width, int height)
+{
+}
+
 void shutdown(void)
 {
 	glDeleteVertexArrays(1, &vertex_array_object);

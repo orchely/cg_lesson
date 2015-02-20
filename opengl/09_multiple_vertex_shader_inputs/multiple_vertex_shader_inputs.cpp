@@ -110,6 +110,10 @@ void render(double currentTime)
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
+void on_resize(int width, int height)
+{
+}
+
 void shutdown(void)
 {
 	glDisableVertexAttribArray(1);

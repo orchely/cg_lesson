@@ -11,6 +11,10 @@ void render(double currentTime)
 	glClearBufferfv(GL_COLOR, 0, color);
 }
 
+void on_resize(int width, int height)
+{
+}
+
 void shutdown()
 {
 }

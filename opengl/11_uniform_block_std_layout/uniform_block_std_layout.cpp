@@ -264,6 +264,10 @@ void render(double currentTime)
 	glutSolidTeapot(1.33);
 }
 
+void on_resize(int width, int height)
+{
+}
+
 void shutdown(void)
 {
 	glDeleteProgram(rendering_program);

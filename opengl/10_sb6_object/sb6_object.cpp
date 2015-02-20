@@ -17,6 +17,10 @@ void render(double currentTime)
 	obj.render();
 }
 
+void on_resize(int width, int height)
+{
+}
+
 void shutdown()
 {
 	obj.free();
