@@ -92,9 +92,7 @@ GLuint compile_shaders(void)
 
 void startup()
 {
-	glGenTextures(1, &texture);
-	sb6::ktx::file::load("../media/textures/Tree.ktx", texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	texture = sb6::ktx::file::load("../media/textures/Tree.ktx");
 
 	program = compile_shaders();
 
