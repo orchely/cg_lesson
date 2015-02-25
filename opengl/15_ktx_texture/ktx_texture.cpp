@@ -26,7 +26,7 @@
 #include <GL/freeglut.h>
 
 // The ktx files used in OpenGL SuperBidle 6th. samples are not formal.
-// They are have to be loaded with sb6ktx.h.
+// They have to be loaded with sb6ktx.h.
 #include <sb6ktx.h>
 
 GLuint program;
