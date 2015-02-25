@@ -22,6 +22,7 @@
 * DEALINGS IN THE SOFTWARE.
 */
 
+#include <math.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
@@ -55,18 +56,19 @@ GLuint compile_shaders(void)
 	};
 
 	static const GLchar *fragment_shader_source[] = {
-		"#version 430 core							\n"
-		"											\n"
-		"uniform sampler2D s;						\n"
-		"											\n"
-		"out vec4 color;							\n"
-		"											\n"
-		"void main(void)							\n"
-		"{											\n"
-		"	vec2 pos = gl_FragCoord.xy;				\n"
-		"	vec2 size = textureSize(s, 0);			\n"
-		"	color = texture(s, pos / size);			\n"
-		"}											\n"
+		"#version 430 core								\n"
+		"												\n"
+		"uniform sampler2D s;							\n"
+		"layout (location = 0) uniform float exposure;	\n"
+		"												\n"
+		"out vec4 color;								\n"
+		"												\n"
+		"void main(void)								\n"
+		"{												\n"
+		"	vec2 pos = gl_FragCoord.xy;					\n"
+		"	vec2 size = textureSize(s, 0);				\n"
+		"	color = texture(s, pos / size) * exposure;	\n"
+		"}												\n"
 	};
 
 	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -105,6 +107,7 @@ void render(double currentTime)
 	glViewport(0, 0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 
 	glUseProgram(program);
+	glUniform1f(0, static_cast<GLfloat>(sin(currentTime) * 16.0f + 16.0f));
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
