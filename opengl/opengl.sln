@@ -114,7 +114,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14_simple_texture", "14_sim
 		{DB591261-46E8-48F2-86ED-EC6BCB54299A} = {DB591261-46E8-48F2-86ED-EC6BCB54299A}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libktx", "ktx\build\vc12\libktx\libktx.vcxproj", "{3E006695-DFD2-4A2C-8C40-28B1C0C4DE93}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "15_ktx_texture", "15_ktx_texture\15_ktx_texture.vcxproj", "{6FD2D629-05BE-4865-A34D-C745DFAAE2E8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4} = {664E6F0D-6784-4760-9565-D54F8EB1EDF4}
+		{35433F33-36AF-4107-A1BD-CF13986868C6} = {35433F33-36AF-4107-A1BD-CF13986868C6}
+		{DB591261-46E8-48F2-86ED-EC6BCB54299A} = {DB591261-46E8-48F2-86ED-EC6BCB54299A}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -194,10 +199,10 @@ Global
 		{056B7041-5B23-461A-9A1A-94813891A55F}.Debug|x64.Build.0 = Debug|x64
 		{056B7041-5B23-461A-9A1A-94813891A55F}.Release|x64.ActiveCfg = Release|x64
 		{056B7041-5B23-461A-9A1A-94813891A55F}.Release|x64.Build.0 = Release|x64
-		{3E006695-DFD2-4A2C-8C40-28B1C0C4DE93}.Debug|x64.ActiveCfg = Debug|x64
-		{3E006695-DFD2-4A2C-8C40-28B1C0C4DE93}.Debug|x64.Build.0 = Debug|x64
-		{3E006695-DFD2-4A2C-8C40-28B1C0C4DE93}.Release|x64.ActiveCfg = Release|x64
-		{3E006695-DFD2-4A2C-8C40-28B1C0C4DE93}.Release|x64.Build.0 = Release|x64
+		{6FD2D629-05BE-4865-A34D-C745DFAAE2E8}.Debug|x64.ActiveCfg = Debug|x64
+		{6FD2D629-05BE-4865-A34D-C745DFAAE2E8}.Debug|x64.Build.0 = Debug|x64
+		{6FD2D629-05BE-4865-A34D-C745DFAAE2E8}.Release|x64.ActiveCfg = Release|x64
+		{6FD2D629-05BE-4865-A34D-C745DFAAE2E8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
