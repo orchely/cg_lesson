@@ -226,7 +226,7 @@ do {                                                                            
 
 /* convenience forms of HASH_FIND/HASH_ADD/HASH_DEL */
 #define HASH_FIND_STR(head,findstr,out)                                          \
-    HASH_FIND(hh,head,findstr,strlen(findstr),out)
+    HASH_FIND(hh,head,findstr,(int)strlen(findstr),out)
 #define HASH_ADD_STR(head,strfield,add)                                          \
     HASH_ADD(hh,head,strfield,strlen(add->strfield),add)
 #define HASH_FIND_INT(head,findint,out)                                          \
