@@ -3,7 +3,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)glew\include;$(SolutionDir)freeglut\include;$(SolutionDir)common;$(SolutionDir)glm</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>FREEGLUT_STATIC;GLEW_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>FREEGLUT_STATIC;GLEW_STATIC;_USE_MATH_DEFINES</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)x64\Debug;$(SolutionDir)glew\lib\Debug\x64\;$(SolutionDir)freeglut\msvc\lib\Debug</AdditionalLibraryDirectories>
@@ -13,7 +13,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)glew\include;$(SolutionDir)freeglut\include;$(SolutionDir)common;$(SolutionDir)glm</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>FREEGLUT_STATIC;GLEW_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>FREEGLUT_STATIC;GLEW_STATIC;_USE_MATH_DEFINES</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)x64\Release;$(SolutionDir)glew\lib\Release\x64\;$(SolutionDir)freeglut\msvc\lib\RelWithDebInfo</AdditionalLibraryDirectories>
