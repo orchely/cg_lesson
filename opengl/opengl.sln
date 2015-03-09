@@ -142,6 +142,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_array_texture", "18_arra
 		{DB591261-46E8-48F2-86ED-EC6BCB54299A} = {DB591261-46E8-48F2-86ED-EC6BCB54299A}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_atomic_operations_on_images", "19_atomic_operations_on_images\19_atomic_operations_on_images.vcxproj", "{3973D4F9-4E03-42A8-99DA-43C64A2E49C4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4} = {664E6F0D-6784-4760-9565-D54F8EB1EDF4}
+		{35433F33-36AF-4107-A1BD-CF13986868C6} = {35433F33-36AF-4107-A1BD-CF13986868C6}
+		{DB591261-46E8-48F2-86ED-EC6BCB54299A} = {DB591261-46E8-48F2-86ED-EC6BCB54299A}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -236,6 +243,10 @@ Global
 		{6286B37F-D8B7-4C9C-8111-88E31339B43F}.Debug|x64.Build.0 = Debug|x64
 		{6286B37F-D8B7-4C9C-8111-88E31339B43F}.Release|x64.ActiveCfg = Release|x64
 		{6286B37F-D8B7-4C9C-8111-88E31339B43F}.Release|x64.Build.0 = Release|x64
+		{3973D4F9-4E03-42A8-99DA-43C64A2E49C4}.Debug|x64.ActiveCfg = Debug|x64
+		{3973D4F9-4E03-42A8-99DA-43C64A2E49C4}.Debug|x64.Build.0 = Debug|x64
+		{3973D4F9-4E03-42A8-99DA-43C64A2E49C4}.Release|x64.ActiveCfg = Release|x64
+		{3973D4F9-4E03-42A8-99DA-43C64A2E49C4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
