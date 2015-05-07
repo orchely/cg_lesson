@@ -21,9 +21,10 @@ DWORD initializeGlut()
 	if (argvw == nullptr) {
 		return GetLastError();
 	}
-	char **argv = reinterpret_cast<char**>(std::calloc(argc, sizeof(char*)));
+	char **argv = static_cast<char**>(std::calloc(argc, sizeof(char*)));
 	if (argv == nullptr) {
-		return E_OUTOFMEMORY;
+		result = E_OUTOFMEMORY;
+		goto end;
 	}
 	for (int i = 0; i < argc; i++) {
 		int len = WideCharToMultiByte(CP_ACP, 0, argvw[i], -1, nullptr, 0, nullptr, nullptr);
@@ -31,7 +32,7 @@ DWORD initializeGlut()
 			result = GetLastError();
 			goto end;
 		}
-		argv[i] = reinterpret_cast<char*>(std::calloc(len, sizeof(char)));
+		argv[i] = static_cast<char*>(std::calloc(len, sizeof(char)));
 		if (argv[i] == nullptr) {
 			result = E_OUTOFMEMORY;
 			goto end;
@@ -44,7 +45,7 @@ DWORD initializeGlut()
 	}
 	int c = argc;
 	glutInit(&c, argv);
-	glutInitContextVersion(4, 2);
+	glutInitContextVersion(4, 3);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitContextFlags(GLUT_DEBUG);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
@@ -59,6 +60,9 @@ end:
 			}
 		}
 		std::free(argv);
+	}
+	if (argvw != nullptr) {
+		GlobalFree(argvw);
 	}
 	return result;
 }
