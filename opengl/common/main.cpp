@@ -95,7 +95,7 @@ void display(void)
 	double delta = currentTime - lastTime;
 	if (delta >= 1.0) {
 		std::wostringstream oss;
-		oss << std::setprecision(4) << (static_cast<double>(frame) / delta) << L" fps" << std::endl;
+		oss << std::fixed << std::setprecision(2) << (static_cast<double>(frame) / delta) << L" fps" << std::endl;
 		OutputDebugStringW(oss.str().c_str());
 		lastTime = currentTime;
 		frame = 0;
