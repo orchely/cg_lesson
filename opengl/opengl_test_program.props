@@ -5,19 +5,22 @@
       <AdditionalIncludeDirectories>$(SolutionDir)glew\include;$(SolutionDir)freeglut\include;$(SolutionDir)common;$(SolutionDir)glm</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FREEGLUT_STATIC;GLEW_STATIC;_USE_MATH_DEFINES</PreprocessorDefinitions>
     </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)x64\Debug;$(SolutionDir)glew\lib\Debug\x64\;$(SolutionDir)freeglut\msvc\lib\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>common.lib;glew32sd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)glew\include;$(SolutionDir)freeglut\include;$(SolutionDir)common;$(SolutionDir)glm</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FREEGLUT_STATIC;GLEW_STATIC;_USE_MATH_DEFINES</PreprocessorDefinitions>
     </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)x64\Release;$(SolutionDir)glew\lib\Release\x64\;$(SolutionDir)freeglut\msvc\lib\RelWithDebInfo</AdditionalLibraryDirectories>
-      <AdditionalDependencies>common.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\common.vcxproj">
+      <Project>{35433f33-36af-4107-a1bd-cf13986868c6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\freeglut\msvc\freeglut_static.vcxproj">
+      <Project>{db591261-46e8-48f2-86ed-ec6bcb54299a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\glew\build\vc12\glew_static.vcxproj">
+      <Project>{664e6f0d-6784-4760-9565-d54f8eb1edf4}</Project>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
