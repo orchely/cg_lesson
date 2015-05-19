@@ -9,6 +9,6 @@ HRESULT TraceError(const wchar_t *file, int line, HRESULT hr, const wchar_t *mes
 
 #else
 
-#define TRACE_ERROR(hr, message)
+#define TRACE_ERROR(hr, message) (hr)
 
 #endif

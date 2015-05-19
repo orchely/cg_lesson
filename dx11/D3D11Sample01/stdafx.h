@@ -17,3 +17,10 @@
 #include <sstream>
 #include <ostream>
 #include <iomanip>
+#include <array>
+
+#if defined(_DEBUG)
+#define _ATL_DEBUG_INTERFACES
+#endif
+#define _ATL_NO_AUTOMATIC_NAMESPACE
+#include <atlbase.h>
