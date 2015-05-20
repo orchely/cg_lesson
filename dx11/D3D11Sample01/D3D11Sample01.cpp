@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "trace_error.h"
+#include <trace_error.h>
 
 class Application
 {
@@ -19,6 +19,7 @@ private:
 	HRESULT initializeWindow();
 	HRESULT initializeDirect3D();
 	HRESULT initializeBackBuffer();
+	HRESULT isDeviceRemoved();
 
 	HINSTANCE m_hInstance;
 	HWND m_hWnd;
@@ -27,6 +28,7 @@ private:
 	LONG m_height;
 
 	static const std::wstring m_title;
+	static const std::wstring m_windowClass;
 
 	D3D_FEATURE_LEVEL m_featureLevel;
 	D3D11_VIEWPORT m_viewPort;
@@ -39,6 +41,7 @@ private:
 };
 
 const std::wstring Application::m_title{ L"Direct3D 11 Sample01" };
+const std::wstring Application::m_windowClass{ L"Direct3D 11 Sample01" };
 
 Application::Application() :
 	m_hInstance(nullptr),
@@ -58,6 +61,7 @@ Application::Application() :
 
 Application::~Application()
 {
+	UnregisterClassW(m_windowClass.c_str(), m_hInstance);
 }
 
 HRESULT Application::initialize(HINSTANCE hInstance)
@@ -75,8 +79,6 @@ HRESULT Application::initialize(HINSTANCE hInstance)
 
 HRESULT Application::initializeWindow()
 {
-	std::wstring className = m_title + L" class";
-
 	WNDCLASSW wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = Application::windowProc;
@@ -87,7 +89,7 @@ HRESULT Application::initializeWindow()
 	wc.hCursor = LoadCursorW(NULL, IDC_ARROW);;
 	wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_APPWORKSPACE);
 	wc.lpszMenuName = nullptr;
-	wc.lpszClassName = className.c_str();
+	wc.lpszClassName = m_windowClass.c_str();
 
 	if (RegisterClassW(&wc) == 0) {
 		return TRACE_ERROR(GetLastError(), L"RegisterClassW() failed.");
@@ -96,7 +98,7 @@ HRESULT Application::initializeWindow()
 	RECT rect{ 0, 0, m_width, m_height };
 	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, TRUE);
 
-	if (CreateWindowExW(0, className.c_str(), m_title.c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, m_width, m_height, nullptr, nullptr, m_hInstance, this) == nullptr) {
+	if (CreateWindowExW(0, m_windowClass.c_str(), m_title.c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, m_width, m_height, nullptr, nullptr, m_hInstance, this) == nullptr) {
 		return TRACE_ERROR(GetLastError(), L"CreateWindowExW() failed.");
 	}
 
@@ -108,6 +110,10 @@ HRESULT Application::initializeWindow()
 
 HRESULT Application::initializeDirect3D()
 {
+	if (m_immediateContext != nullptr) {
+		m_immediateContext->ClearState();
+	}
+
 	DXGI_SWAP_CHAIN_DESC desc;
 	memset(&desc, 0, sizeof(desc));
 	desc.BufferCount = 1;
@@ -231,9 +237,27 @@ HRESULT Application::initializeBackBuffer()
 	return S_OK;
 }
 
+HRESULT Application::isDeviceRemoved()
+{
+	HRESULT result = m_device->GetDeviceRemovedReason();
+	if (FAILED(result)) {
+		TRACE_ERROR(result, L"ID3D11Device::GetDeviceRemovedReason() failed.");
+	}
+
+	if (result == DXGI_ERROR_DEVICE_HUNG || result == DXGI_ERROR_DEVICE_RESET) {
+		result = initializeDirect3D();
+	}
+
+	return result;
+}
+
 bool Application::onIdle()
 {
 	if (m_device == nullptr) {
+		return false;
+	}
+
+	if (FAILED(isDeviceRemoved())) {
 		return false;
 	}
 
@@ -241,7 +265,6 @@ bool Application::onIdle()
 
 	return true;
 }
-
 
 void Application::render()
 {
@@ -282,25 +305,19 @@ LRESULT Application::windowProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_DESTROY:
-		// Direct3Dの終了処理
-		//CleanupDirect3D();
-		// ウインドウを閉じる
 		PostQuitMessage(0);
-		m_hWnd = NULL;
 		return 0;
 
 	case WM_KEYDOWN:
-		// キー入力の処理
 		switch (wParam)
 		{
-		case VK_ESCAPE:	// [ESC]キーでウインドウを閉じる
+		case VK_ESCAPE:
 			PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
 			break;
 		}
 		break;
 	}
 
-	// デフォルト処理
 	return DefWindowProc(m_hWnd, msg, wParam, lParam);
 }
 
