@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include  <trace_error.h>
+#include <DirectXMath.h>
 
 WCHAR* FormatName[] = {
 	L"DXGI_FORMAT_UNKNOWN",

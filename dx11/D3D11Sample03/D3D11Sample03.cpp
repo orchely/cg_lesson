@@ -14,7 +14,11 @@ private:
 	static LRESULT CALLBACK windowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	LRESULT windowProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	bool onIdle();
-	void render();
+	HRESULT render();
+
+	LRESULT onDestroy(UINT msg, WPARAM wParam, LPARAM lParam);
+	LRESULT onSize(UINT msg, WPARAM wParam, LPARAM lParam);
+	LRESULT onKeyDown(UINT msg, WPARAM wParam, LPARAM lParam);
 
 	HRESULT initializeWindow();
 	HRESULT initializeDirect3D();
@@ -30,32 +34,35 @@ private:
 	static const std::wstring m_title;
 	static const std::wstring m_windowClass;
 
+	bool m_stanbyMode;
+	std::array<FLOAT, 4> m_clearColor;
+
 	D3D_FEATURE_LEVEL m_featureLevel;
 	D3D11_VIEWPORT m_viewPort;
+	ATL::CComPtr<IDXGIFactory> m_factory;
 	ATL::CComPtr<IDXGISwapChain> m_swapChain;
 	ATL::CComPtr<ID3D11Device> m_device;
 	ATL::CComPtr<ID3D11DeviceContext> m_immediateContext;
 	ATL::CComPtr<ID3D11RenderTargetView> m_renderTargetView;
-	ATL::CComPtr<ID3D11Texture2D> m_depthStencilTexture;
-	ATL::CComPtr<ID3D11DepthStencilView> m_depthStencilView;
 };
 
-const std::wstring Application::m_title{ L"Direct3D 11 Sample01" };
-const std::wstring Application::m_windowClass{ L"D3D11S01" };
+const std::wstring Application::m_title{ L"Direct3D 11 Sample03" };
+const std::wstring Application::m_windowClass{ L"D3D11D03" };
 
 Application::Application() :
-	m_hInstance(nullptr),
-	m_hWnd(nullptr),
-	m_width(1280),
-	m_height(720),
-	m_featureLevel(D3D_FEATURE_LEVEL_9_1),
-	m_viewPort(),
-	m_swapChain(),
-	m_device(),
-	m_immediateContext(),
-	m_renderTargetView(),
-	m_depthStencilTexture(),
-	m_depthStencilView()
+m_hInstance(nullptr),
+m_hWnd(nullptr),
+m_width(1280),
+m_height(720),
+m_stanbyMode(false),
+m_clearColor({ 0.0f, 0.125f, 0.3f, 1.0f }),
+m_featureLevel(D3D_FEATURE_LEVEL_9_1),
+m_viewPort(),
+m_factory(),
+m_swapChain(),
+m_device(),
+m_immediateContext(),
+m_renderTargetView()
 {
 }
 
@@ -169,7 +176,24 @@ HRESULT Application::initializeDirect3D()
 	m_device.Attach(device);
 	m_immediateContext.Attach(immediateContext);
 
-	return initializeBackBuffer();;
+	result = initializeBackBuffer();
+	if (FAILED(result)) {
+		return result;
+	}
+
+	IDXGIFactory *factory = nullptr;
+	result = CreateDXGIFactory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory));
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"CreateDXGIFactory() failed.");
+	}
+	m_factory.Attach(factory);
+
+	result = m_factory->MakeWindowAssociation(m_hWnd, 0);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"IDXGIFactory::MakeWindowAssociation() failed.");
+	}
+
+	return S_OK;
 }
 
 HRESULT Application::initializeBackBuffer()
@@ -191,41 +215,6 @@ HRESULT Application::initializeBackBuffer()
 		return TRACE_ERROR(result, L"ID3D11Device::CreateRenderTargetView() failed.");
 	}
 	m_renderTargetView.Attach(renderTargetView);
-
-	D3D11_TEXTURE2D_DESC depthBufferDesc;
-	memset(&depthBufferDesc, 0, sizeof(depthBufferDesc));
-	depthBufferDesc.Width = m_width;
-	depthBufferDesc.Height = m_height;
-	depthBufferDesc.MipLevels = 1;
-	depthBufferDesc.ArraySize = 1;
-	depthBufferDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	depthBufferDesc.SampleDesc.Count = 1;
-	depthBufferDesc.SampleDesc.Quality = 0;
-	depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	depthBufferDesc.CPUAccessFlags = 0;
-	depthBufferDesc.MiscFlags = 0;
-
-	ID3D11Texture2D *depthStencilTexture = nullptr;
-	result = m_device->CreateTexture2D(&depthBufferDesc, nullptr, &depthStencilTexture);
-	if (FAILED(result)) {
-		return TRACE_ERROR(result, L"ID3D11Device::CreateTexture2D() failed.");
-	}
-	m_depthStencilTexture.Attach(depthStencilTexture);
-
-	D3D11_DEPTH_STENCIL_VIEW_DESC dsvViewDesc;
-	memset(&dsvViewDesc, 0, sizeof(dsvViewDesc));
-	dsvViewDesc.Format = depthBufferDesc.Format;
-	dsvViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	dsvViewDesc.Flags = 0;
-	dsvViewDesc.Texture2D.MipSlice = 0;
-
-	ID3D11DepthStencilView *depthStencilView = nullptr;
-	result = m_device->CreateDepthStencilView(m_depthStencilTexture, &dsvViewDesc, &depthStencilView);
-	if (FAILED(result)) {
-		return TRACE_ERROR(result, L"ID3D11Device::CreateDepthStencilView() failed.");
-	}
-	m_depthStencilView.Attach(depthStencilView);
 
 	m_viewPort.TopLeftX = 0.0f;
 	m_viewPort.TopLeftY = 0.0f;
@@ -261,24 +250,45 @@ bool Application::onIdle()
 		return false;
 	}
 
-	render();
+	HRESULT result;
+
+	if (m_stanbyMode) {
+		result = m_swapChain->Present(0, DXGI_PRESENT_TEST);
+		if (result != S_OK) {
+			Sleep(100);
+			return true;
+		}
+		m_stanbyMode = false;
+		OutputDebugStringW(L"exit stanby mode\n");
+	}
+
+	result = render();
+	if (result == DXGI_STATUS_OCCLUDED) {
+		m_stanbyMode = true;
+		FLOAT c = m_clearColor[0];
+		m_clearColor[0] = m_clearColor[1];
+		m_clearColor[1] = m_clearColor[2];
+		m_clearColor[2] = m_clearColor[3];
+		m_clearColor[3] = c;
+		OutputDebugStringW(L"enter stanby mode\n");
+	}
 
 	return true;
 }
 
-void Application::render()
+HRESULT Application::render()
 {
 	HRESULT result = S_OK;
-	FLOAT clearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f };
-	m_immediateContext->ClearRenderTargetView(m_renderTargetView, clearColor);
-	m_immediateContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	m_immediateContext->ClearRenderTargetView(m_renderTargetView, m_clearColor.data());
 	m_immediateContext->RSSetViewports(1, &m_viewPort);
-	m_immediateContext->OMSetRenderTargets(1, &m_renderTargetView.p, m_depthStencilView);
+	m_immediateContext->OMSetRenderTargets(1, &m_renderTargetView.p, nullptr);
 	result = m_swapChain->Present(0, 0);
 	if (FAILED(result)) {
 		TRACE_ERROR(result, L"IDXGISwapChain::Present() failed.");
 	}
+	return result;
 }
+
 LRESULT CALLBACK Application::windowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (msg == WM_NCCREATE) {
@@ -292,33 +302,78 @@ LRESULT CALLBACK Application::windowProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 	if (instance != nullptr) {
 		return instance->windowProc(msg, wParam, lParam);
 	}
-		
+
 	// fallback
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-
 LRESULT Application::windowProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	HRESULT hr = S_OK;
-
 	switch (msg)
 	{
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		return 0;
+	case WM_DESTROY:	return onDestroy(msg, wParam, lParam);
+	case WM_KEYDOWN:	return onKeyDown(msg, wParam, lParam);
+	case WM_SIZE:		return onSize(msg, wParam, lParam);
+	default:			return DefWindowProcW(m_hWnd, msg, wParam, lParam);
+	}
+}
 
-	case WM_KEYDOWN:
-		switch (wParam)
-		{
-		case VK_ESCAPE:
-			PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
-			break;
+LRESULT Application::onDestroy(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	PostQuitMessage(0);
+	return 0;
+}
+
+LRESULT Application::onKeyDown(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	HRESULT result;
+
+	switch (wParam) {
+	case VK_ESCAPE:
+		PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
+		break;
+	case VK_F5:
+		if (m_swapChain != nullptr) {
+			BOOL fullScreen;
+			m_swapChain->GetFullscreenState(&fullScreen, nullptr);
+			m_swapChain->SetFullscreenState(!fullScreen, nullptr);
 		}
+		break;
+	case VK_F6:
+		if (m_swapChain != nullptr) {
+			DXGI_MODE_DESC desc;
+			desc.Width = 800;
+			desc.Height = 600;
+			desc.RefreshRate.Numerator = 60;
+			desc.RefreshRate.Denominator = 1;
+			desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			desc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+			desc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+			result = m_swapChain->ResizeTarget(&desc);
+			if (FAILED(result)) {
+				TRACE_ERROR(result, L"IDXGISwapChain::ResizeTarget() failed.");
+			}
+		}
+	default:
 		break;
 	}
 
-	return DefWindowProc(m_hWnd, msg, wParam, lParam);
+	return DefWindowProcW(m_hWnd, msg, wParam, lParam);
+}
+
+LRESULT Application::onSize(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	m_width = HIWORD(lParam);
+	m_height = LOWORD(lParam);
+
+	if (m_device != nullptr && wParam != SIZE_MINIMIZED) {
+		m_immediateContext->OMSetRenderTargets(0, nullptr, nullptr);
+		m_renderTargetView.Release();
+		m_swapChain->ResizeBuffers(1, 0, 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+		initializeBackBuffer();
+	}
+
+	return DefWindowProcW(m_hWnd, msg, wParam, lParam);
 }
 
 WPARAM Application::run()
@@ -329,8 +384,9 @@ WPARAM Application::run()
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
 		} else {
-			if (!onIdle())
+			if (!onIdle()) {
 				DestroyWindow(m_hWnd);
+			}
 		}
 	} while (msg.message != WM_QUIT);
 
