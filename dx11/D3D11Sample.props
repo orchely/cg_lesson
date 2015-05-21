@@ -5,6 +5,7 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)$(Configuration)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -13,6 +14,9 @@
     <Link>
       <AdditionalDependencies>dxgi.lib;d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <FxCompile>
+      <AdditionalOptions>/Ges</AdditionalOptions>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>
