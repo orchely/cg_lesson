@@ -90,6 +90,7 @@ private:
 
 	bool m_stanbyMode;
 	std::array<FLOAT, 4> m_clearColor;
+	DirectX::XMFLOAT3 m_lightPosition;
 
 	struct NeverChanges m_neverChanges;
 	struct ChangesEveryFrame m_changesEveryFrame;
@@ -112,6 +113,10 @@ private:
 	ATL::CComPtr<ID3D11Buffer> m_constantBufferNeverChanges;
 	ATL::CComPtr<ID3D11Buffer> m_constantBufferChangesEveryFrame;
 	ATL::CComPtr<ID3D11Buffer> m_constantBufferChangesEveryObject;
+	ATL::CComPtr<ID3D11InputLayout> m_inputLayout;
+	ATL::CComPtr<ID3D11BlendState> m_blendState;
+	ATL::CComPtr<ID3D11RasterizerState> m_rasterizerState;
+	ATL::CComPtr<ID3D11DepthStencilState> m_depthStencilState;
 
 
 };
@@ -129,6 +134,7 @@ m_neverChanges(),
 m_changesEveryFrame(),
 m_changesEveryObject(),
 m_clearColor({ 0.0f, 0.125f, 0.3f, 1.0f }),
+m_lightPosition(3.0f, 3.0f, -3.0f),
 m_featureLevel(D3D_FEATURE_LEVEL_9_1),
 m_viewPort(),
 m_swapChain(),
@@ -142,7 +148,10 @@ m_colorVertBuffer(),
 m_indexBuffer(),
 m_vertexShader(),
 m_geometryShader(),
-m_pixelShader()
+m_pixelShader(),
+m_inputLayout(),
+m_blendState(),
+m_rasterizerState()
 {
 }
 
@@ -201,12 +210,14 @@ HRESULT Application::initializeDirect3D()
 	// ID3D11Device, ID3D11DeviceContext
 	DXGI_SWAP_CHAIN_DESC desc;
 	memset(&desc, 0, sizeof(desc));
-	desc.BufferCount = 1;
+	desc.BufferCount = 3;
 	desc.BufferDesc.Width = m_width;
 	desc.BufferDesc.Height = m_height;
 	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.BufferDesc.RefreshRate.Numerator = 60;
 	desc.BufferDesc.RefreshRate.Denominator = 1;
+	desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
+	desc.BufferDesc.Scaling = DXGI_MODE_SCALING_CENTERED;
 	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	desc.OutputWindow = m_hWnd;
 	desc.SampleDesc.Count = 1;
@@ -396,6 +407,17 @@ HRESULT Application::initializeDirect3D()
 	}
 	m_pixelShader.Attach(pixelShader);
 
+	// input layout
+	std::vector<D3D11_INPUT_ELEMENT_DESC> layout = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+	ID3D11InputLayout *inputLayout = nullptr;
+	result = m_device->CreateInputLayout(layout.data(), layout.size(), vsBlob.data(), vsBlob.size(), &inputLayout);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"ID3D11Device::CreateInputLayout() failed.");
+	}
+
 	// constant buffer
 	D3D11_BUFFER_DESC constantBufferDesc;
 	constantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -427,6 +449,63 @@ HRESULT Application::initializeDirect3D()
 	}
 	m_constantBufferChangesEveryObject.Attach(constantBufferChangesEveryObject);
 
+	// blend state
+	D3D11_BLEND_DESC blendDesc;
+	memset(&blendDesc, 0, sizeof(blendDesc));
+	blendDesc.AlphaToCoverageEnable = FALSE;
+	blendDesc.IndependentBlendEnable = FALSE;
+	blendDesc.RenderTarget[0].BlendEnable = FALSE;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	ID3D11BlendState *blendState = nullptr;
+	result = m_device->CreateBlendState(&blendDesc, &blendState);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"ID3D11Device::CreateBlendState() failed.");
+	}
+	m_blendState.Attach(blendState);
+
+	// rasterizer state
+	D3D11_RASTERIZER_DESC rasterizerDesc;
+	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizerDesc.CullMode = D3D11_CULL_NONE;
+	rasterizerDesc.FrontCounterClockwise = FALSE;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0;
+	rasterizerDesc.SlopeScaledDepthBias = 0;
+	rasterizerDesc.DepthClipEnable = FALSE;
+	rasterizerDesc.ScissorEnable = FALSE;
+	rasterizerDesc.MultisampleEnable = FALSE;
+	rasterizerDesc.AntialiasedLineEnable = FALSE;
+	ID3D11RasterizerState *rasterizerState = nullptr;
+	result = m_device->CreateRasterizerState(&rasterizerDesc, &rasterizerState);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"ID3D11Device::CreateRasterizerState() failed.");
+	}
+	m_rasterizerState.Attach(rasterizerState);
+
+	// depth stencil state
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+	depthStencilDesc.DepthEnable = TRUE;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthStencilDesc.StencilEnable = FALSE;
+	depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+	depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	ID3D11DepthStencilState *depthStencilState = nullptr;
+	result = m_device->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"ID3D11Device::CreateDepthStencilState() failed.");
+	}
+	m_depthStencilState.Attach(depthStencilState);
+
+
 
 	result = initializeBackBuffer();
 	if (FAILED(result)) {
@@ -456,6 +535,41 @@ HRESULT Application::initializeBackBuffer()
 		return TRACE_ERROR(result, L"ID3D11Device::CreateRenderTargetView() failed.");
 	}
 	m_renderTargetView.Attach(renderTargetView);
+
+	D3D11_TEXTURE2D_DESC depthBufferDesc;
+	memset(&depthBufferDesc, 0, sizeof(depthBufferDesc));
+	depthBufferDesc.Width = m_width;
+	depthBufferDesc.Height = m_height;
+	depthBufferDesc.MipLevels = 1;
+	depthBufferDesc.ArraySize = 1;
+	depthBufferDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	depthBufferDesc.SampleDesc.Count = 1;
+	depthBufferDesc.SampleDesc.Quality = 0;
+	depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthBufferDesc.CPUAccessFlags = 0;
+	depthBufferDesc.MiscFlags = 0;
+
+	ID3D11Texture2D *depthStencilTexture = nullptr;
+	result = m_device->CreateTexture2D(&depthBufferDesc, nullptr, &depthStencilTexture);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"ID3D11Device::CreateTexture2D() failed.");
+	}
+	m_depthStencilTexture.Attach(depthStencilTexture);
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvViewDesc;
+	memset(&dsvViewDesc, 0, sizeof(dsvViewDesc));
+	dsvViewDesc.Format = depthBufferDesc.Format;
+	dsvViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	dsvViewDesc.Flags = 0;
+	dsvViewDesc.Texture2D.MipSlice = 0;
+
+	ID3D11DepthStencilView *depthStencilView = nullptr;
+	result = m_device->CreateDepthStencilView(m_depthStencilTexture, &dsvViewDesc, &depthStencilView);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"ID3D11Device::CreateDepthStencilView() failed.");
+	}
+	m_depthStencilView.Attach(depthStencilView);
 
 	m_viewPort.TopLeftX = 0.0f;
 	m_viewPort.TopLeftY = 0.0f;
@@ -532,13 +646,45 @@ HRESULT Application::render()
 {
 	HRESULT result = S_OK;
 	m_immediateContext->ClearRenderTargetView(m_renderTargetView, m_clearColor.data());
+	m_immediateContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	DirectX::XMVECTORF32 eyePosition = { 0.0f, 5.0f, -5.0f, 1.0f };
+	DirectX::XMVECTORF32 focusPosition = { 0.0f, 0.0f, 0.0f, 1.0f };
+	DirectX::XMVECTORF32 upDirection = { 0.0f, 1.0f, 0.0f, 1.0f };
+	DirectX::XMMATRIX mat = DirectX::XMMatrixLookAtLH(eyePosition, focusPosition, upDirection);
+	DirectX::XMStoreFloat4x4(&m_changesEveryFrame.View, DirectX::XMMatrixTranspose(mat));
+
+	DirectX::XMVECTOR vec = DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&m_lightPosition), mat);
+	DirectX::XMStoreFloat3(&m_changesEveryFrame.Light, vec);
+
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	result = m_immediateContext->Map(m_constantBufferChangesEveryFrame, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"ID3D11DeviceContext::Map() failed.");
+	}
+	memcpy(mappedResource.pData, &m_changesEveryFrame, sizeof(ChangesEveryFrame));
+	m_immediateContext->Unmap(m_constantBufferChangesEveryFrame, 0);
+
+	ID3D11Buffer *vertBuffers[] = { m_xyzVertBuffer, m_colorVertBuffer };
+	UINT strides[] = { sizeof(XYZBuffer), sizeof(ColBuffer) };
+	UINT offsets[] = { 0, 0 };
+	m_immediateContext->IASetVertexBuffers(0, 2, vertBuffers, strides, offsets);
+	m_immediateContext->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	m_immediateContext->IASetInputLayout(m_inputLayout);
+	m_immediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 	m_immediateContext->RSSetViewports(1, &m_viewPort);
+	m_immediateContext->RSSetState(m_rasterizerState);
 	m_immediateContext->OMSetRenderTargets(1, &m_renderTargetView.p, nullptr);
+
+	FLOAT blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	m_immediateContext->OMSetBlendState(m_blendState, blendFactor, 0);
 	result = m_swapChain->Present(0, 0);
 	if (FAILED(result)) {
-		TRACE_ERROR(result, L"IDXGISwapChain::Present() failed.");
+		return TRACE_ERROR(result, L"IDXGISwapChain::Present() failed.");
 	}
-	return result;
+
+	return S_OK;
 }
 
 LRESULT CALLBACK Application::windowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
