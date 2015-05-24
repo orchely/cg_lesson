@@ -117,8 +117,6 @@ private:
 	ATL::CComPtr<ID3D11BlendState> m_blendState;
 	ATL::CComPtr<ID3D11RasterizerState> m_rasterizerState;
 	ATL::CComPtr<ID3D11DepthStencilState> m_depthStencilState;
-
-
 };
 
 const std::wstring Application::m_title { L"Direct3D 11 Sample05" };
@@ -231,9 +229,8 @@ HRESULT Application::initializeDirect3D()
 	UINT createDeviceFlags = 0;
 #endif
 
-	std::array<D3D_FEATURE_LEVEL, 3> featureLevels = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
-
 	HRESULT result = S_OK;
+	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
 	IDXGISwapChain *swapChain = nullptr;
 	ID3D11Device *device = nullptr;
 	ID3D11DeviceContext *immediateContext = nullptr;
@@ -244,8 +241,8 @@ HRESULT Application::initializeDirect3D()
 			driverType,
 			nullptr,
 			createDeviceFlags,
-			featureLevels.data(),
-			static_cast<UINT>(featureLevels.size()),
+			featureLevels,
+			ARRAYSIZE(featureLevels),
 			D3D11_SDK_VERSION,
 			&desc,
 			&swapChain,
@@ -266,14 +263,6 @@ HRESULT Application::initializeDirect3D()
 	m_immediateContext.Attach(immediateContext);
 
 	// vertex buffer
-	D3D11_BUFFER_DESC xyzBufferDesc;
-	xyzBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	xyzBufferDesc.ByteWidth = sizeof(XYZBuffer) * 8;
-	xyzBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	xyzBufferDesc.CPUAccessFlags = 0;
-	xyzBufferDesc.MiscFlags = 0;
-	xyzBufferDesc.StructureByteStride = 0;
-
 	struct XYZBuffer positions[] = {
 		DirectX::XMFLOAT3(-1.0f, 1.0f, -1.0f),
 		DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f),
@@ -284,6 +273,14 @@ HRESULT Application::initializeDirect3D()
 		DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f),
 		DirectX::XMFLOAT3(-1.0f, -1.0f, 1.0f)
 	};
+
+	D3D11_BUFFER_DESC xyzBufferDesc;
+	xyzBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	xyzBufferDesc.ByteWidth = sizeof(positions);
+	xyzBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	xyzBufferDesc.CPUAccessFlags = 0;
+	xyzBufferDesc.MiscFlags = 0;
+	xyzBufferDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA xyzSubData;
 	xyzSubData.pSysMem = positions;
@@ -298,14 +295,6 @@ HRESULT Application::initializeDirect3D()
 	m_xyzVertBuffer.Attach(xyzVertBuffer);
 
 	// color buffer
-	D3D11_BUFFER_DESC colorBufferDesc;
-	colorBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	colorBufferDesc.ByteWidth = sizeof(ColBuffer) * 8;
-	colorBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	colorBufferDesc.CPUAccessFlags = 0;
-	colorBufferDesc.MiscFlags = 0;
-	colorBufferDesc.StructureByteStride = 0;
-
 	struct ColBuffer colorBuffer[] = {
 		DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),
 		DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),
@@ -316,6 +305,14 @@ HRESULT Application::initializeDirect3D()
 		DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f),
 		DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f)
 	};
+
+	D3D11_BUFFER_DESC colorBufferDesc;
+	colorBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	colorBufferDesc.ByteWidth = sizeof(colorBuffer);
+	colorBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	colorBufferDesc.CPUAccessFlags = 0;
+	colorBufferDesc.MiscFlags = 0;
+	colorBufferDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA colorSubData;
 	colorSubData.pSysMem = colorBuffer;
@@ -330,14 +327,6 @@ HRESULT Application::initializeDirect3D()
 	m_colorVertBuffer.Attach(colorVertBuffer);
 
 	// index buffer
-	D3D11_BUFFER_DESC indexBufferDesc;
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(UINT) * 36;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags = 0;
-	indexBufferDesc.MiscFlags = 0;
-	indexBufferDesc.StructureByteStride = 0;
-
 	UINT indexes[] = {
 		0, 1, 3,
 		1, 2, 3,
@@ -352,6 +341,14 @@ HRESULT Application::initializeDirect3D()
 		3, 2, 7,
 		2, 6, 7
 	};
+
+	D3D11_BUFFER_DESC indexBufferDesc;
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.ByteWidth = sizeof(indexes);
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+	indexBufferDesc.MiscFlags = 0;
+	indexBufferDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA indexSubData;
 	indexSubData.pSysMem = indexes;
@@ -408,12 +405,12 @@ HRESULT Application::initializeDirect3D()
 	m_pixelShader.Attach(pixelShader);
 
 	// input layout
-	std::vector<D3D11_INPUT_ELEMENT_DESC> layout = {
+	D3D11_INPUT_ELEMENT_DESC layout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	ID3D11InputLayout *inputLayout = nullptr;
-	result = m_device->CreateInputLayout(layout.data(), layout.size(), vsBlob.data(), vsBlob.size(), &inputLayout);
+	result = m_device->CreateInputLayout(layout, ARRAYSIZE(layout), vsBlob.data(), vsBlob.size(), &inputLayout);
 	if (FAILED(result)) {
 		return TRACE_ERROR(result, L"ID3D11Device::CreateInputLayout() failed.");
 	}
@@ -505,13 +502,10 @@ HRESULT Application::initializeDirect3D()
 	}
 	m_depthStencilState.Attach(depthStencilState);
 
-
-
 	result = initializeBackBuffer();
 	if (FAILED(result)) {
 		return result;
 	}
-
 
 	return S_OK;
 }
@@ -577,6 +571,21 @@ HRESULT Application::initializeBackBuffer()
 	m_viewPort.Height = static_cast<FLOAT>(m_height);
 	m_viewPort.MinDepth = 0.0f;
 	m_viewPort.MaxDepth = 1.0f;
+
+	DirectX::XMMATRIX mat = DirectX::XMMatrixPerspectiveFovLH(
+		DirectX::XMConvertToRadians(30.0f),
+		static_cast<float>(backBufferDesc.Width) / static_cast<float>(backBufferDesc.Height),
+		1.0f,
+		20.0f);
+	DirectX::XMStoreFloat4x4(&m_neverChanges.Projection, DirectX::XMMatrixTranspose(mat));
+
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	result = m_immediateContext->Map(m_constantBufferNeverChanges, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"ID3D11DeviceContext::Map() failed.");
+	}
+	memcpy(mappedResource.pData, &m_neverChanges, sizeof(m_neverChanges));
+	m_immediateContext->Unmap(m_constantBufferNeverChanges, 0);
 
 	return S_OK;
 }
