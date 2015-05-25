@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "finally.h"
+#include "D3D11SampleCommon.h"
 
 HRESULT TraceError(const wchar_t *file, int line, HRESULT hr, const wchar_t *message)
 {
@@ -31,4 +31,29 @@ HRESULT TraceError(const wchar_t *file, int line, HRESULT hr, const wchar_t *mes
 	OutputDebugStringW(oss.str().c_str());
 
 	return hr;
+}
+
+HRESULT readFile(const wchar_t *filename, std::vector<uint8_t> &buf)
+{
+	HANDLE file = CreateFileW(filename, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+	if (file == INVALID_HANDLE_VALUE) {
+		HRESULT error = GetLastError();
+		std::wostringstream oss;
+		oss << L"CreateFileW(\"" << filename << L"\", ...) failed.";
+		return TRACE_ERROR(error, oss.str().c_str());
+	}
+	auto closer = finally([=]{ CloseHandle(file); });
+
+	LARGE_INTEGER size;
+	if (FAILED(GetFileSizeEx(file, &size))) {
+		return TRACE_ERROR(GetLastError(), L"GetFileSizeEx() failed.");
+	}
+	buf.resize(size.QuadPart);
+
+	DWORD readSize;
+	if (ReadFile(file, buf.data(), static_cast<DWORD>(buf.size()), &readSize, nullptr) == 0) {
+		return TRACE_ERROR(GetLastError(), L"ReadFile() failed.");
+	}
+
+	return S_OK;
 }

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include <trace_error.h>
+#include <D3D11SampleCommon.h>
 
 class Application
 {
