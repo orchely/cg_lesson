@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include <trace_error.h>
 #include <finally.h>
-#include <d3dcompiler.h>
 
 struct XYZBuffer
 {
@@ -89,6 +88,8 @@ private:
 	static const std::wstring m_windowClass;
 
 	bool m_stanbyMode;
+	bool m_depthMode;
+
 	std::array<FLOAT, 4> m_clearColor;
 	DirectX::XMFLOAT3 m_lightPosition;
 
@@ -128,6 +129,7 @@ m_hWnd(nullptr),
 m_width(1280),
 m_height(720),
 m_stanbyMode(false),
+m_depthMode(true),
 m_neverChanges(),
 m_changesEveryFrame(),
 m_changesEveryObject(),
@@ -206,22 +208,22 @@ HRESULT Application::initializeWindow()
 HRESULT Application::initializeDirect3D()
 {
 	// ID3D11Device, ID3D11DeviceContext
-	DXGI_SWAP_CHAIN_DESC desc;
-	memset(&desc, 0, sizeof(desc));
-	desc.BufferCount = 3;
-	desc.BufferDesc.Width = m_width;
-	desc.BufferDesc.Height = m_height;
-	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.BufferDesc.RefreshRate.Numerator = 60;
-	desc.BufferDesc.RefreshRate.Denominator = 1;
-	desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
-	desc.BufferDesc.Scaling = DXGI_MODE_SCALING_CENTERED;
-	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	desc.OutputWindow = m_hWnd;
-	desc.SampleDesc.Count = 1;
-	desc.SampleDesc.Quality = 0;
-	desc.Windowed = TRUE;
-	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+	memset(&swapChainDesc, 0, sizeof(swapChainDesc));
+	swapChainDesc.BufferCount = 3;
+	swapChainDesc.BufferDesc.Width = m_width;
+	swapChainDesc.BufferDesc.Height = m_height;
+	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
+	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_CENTERED;
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.OutputWindow = m_hWnd;
+	swapChainDesc.SampleDesc.Count = 1;
+	swapChainDesc.SampleDesc.Quality = 0;
+	swapChainDesc.Windowed = TRUE;
+	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 #if defined(_DEBUG)
 	UINT createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
@@ -244,7 +246,7 @@ HRESULT Application::initializeDirect3D()
 			featureLevels,
 			ARRAYSIZE(featureLevels),
 			D3D11_SDK_VERSION,
-			&desc,
+			&swapChainDesc,
 			&swapChain,
 			&device,
 			&m_featureLevel,
@@ -264,14 +266,14 @@ HRESULT Application::initializeDirect3D()
 
 	// vertex buffer
 	struct XYZBuffer positions[] = {
-		DirectX::XMFLOAT3(-1.0f, 1.0f, -1.0f),
-		DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f),
-		DirectX::XMFLOAT3(1.0f, -1.0f, -1.0f),
+		DirectX::XMFLOAT3(-1.0f,  1.0f, -1.0f),
+		DirectX::XMFLOAT3( 1.0f,  1.0f, -1.0f),
+		DirectX::XMFLOAT3( 1.0f, -1.0f, -1.0f),
 		DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f),
-		DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f),
-		DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f),
-		DirectX::XMFLOAT3(1.0f, -1.0f, 1.0f),
-		DirectX::XMFLOAT3(-1.0f, -1.0f, 1.0f)
+		DirectX::XMFLOAT3(-1.0f,  1.0f,  1.0f),
+		DirectX::XMFLOAT3( 1.0f,  1.0f,  1.0f),
+		DirectX::XMFLOAT3( 1.0f, -1.0f,  1.0f),
+		DirectX::XMFLOAT3(-1.0f, -1.0f,  1.0f)
 	};
 
 	D3D11_BUFFER_DESC xyzBufferDesc;
@@ -407,13 +409,14 @@ HRESULT Application::initializeDirect3D()
 	// input layout
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	ID3D11InputLayout *inputLayout = nullptr;
 	result = m_device->CreateInputLayout(layout, ARRAYSIZE(layout), vsBlob.data(), vsBlob.size(), &inputLayout);
 	if (FAILED(result)) {
 		return TRACE_ERROR(result, L"ID3D11Device::CreateInputLayout() failed.");
 	}
+	m_inputLayout.Attach(inputLayout);
 
 	// constant buffer
 	D3D11_BUFFER_DESC constantBufferDesc;
@@ -421,6 +424,7 @@ HRESULT Application::initializeDirect3D()
 	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	constantBufferDesc.MiscFlags = 0;
+	constantBufferDesc.StructureByteStride = 0;
 
 	constantBufferDesc.ByteWidth = sizeof(NeverChanges);
 	ID3D11Buffer *constantBufferNeverChanges = nullptr;
@@ -485,8 +489,8 @@ HRESULT Application::initializeDirect3D()
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
 	depthStencilDesc.StencilEnable = FALSE;
-	depthStencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-	depthStencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+	depthStencilDesc.StencilReadMask = 0;
+	depthStencilDesc.StencilWriteMask = 0;
 	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
 	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
@@ -530,15 +534,10 @@ HRESULT Application::initializeBackBuffer()
 	}
 	m_renderTargetView.Attach(renderTargetView);
 
-	D3D11_TEXTURE2D_DESC depthBufferDesc;
-	memset(&depthBufferDesc, 0, sizeof(depthBufferDesc));
-	depthBufferDesc.Width = m_width;
-	depthBufferDesc.Height = m_height;
+	D3D11_TEXTURE2D_DESC depthBufferDesc = backBufferDesc;
 	depthBufferDesc.MipLevels = 1;
 	depthBufferDesc.ArraySize = 1;
 	depthBufferDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	depthBufferDesc.SampleDesc.Count = 1;
-	depthBufferDesc.SampleDesc.Quality = 0;
 	depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	depthBufferDesc.CPUAccessFlags = 0;
@@ -552,7 +551,6 @@ HRESULT Application::initializeBackBuffer()
 	m_depthStencilTexture.Attach(depthStencilTexture);
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsvViewDesc;
-	memset(&dsvViewDesc, 0, sizeof(dsvViewDesc));
 	dsvViewDesc.Format = depthBufferDesc.Format;
 	dsvViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	dsvViewDesc.Flags = 0;
@@ -640,11 +638,6 @@ bool Application::onIdle()
 	result = render();
 	if (result == DXGI_STATUS_OCCLUDED) {
 		m_stanbyMode = true;
-		FLOAT c = m_clearColor[0];
-		m_clearColor[0] = m_clearColor[1];
-		m_clearColor[1] = m_clearColor[2];
-		m_clearColor[2] = m_clearColor[3];
-		m_clearColor[3] = c;
 		OutputDebugStringW(L"enter stanby mode\n");
 	}
 
@@ -674,6 +667,20 @@ HRESULT Application::render()
 	memcpy(mappedResource.pData, &m_changesEveryFrame, sizeof(ChangesEveryFrame));
 	m_immediateContext->Unmap(m_constantBufferChangesEveryFrame, 0);
 
+	DirectX::XMMATRIX matY, matX;
+	FLOAT rotate = static_cast<FLOAT>(DirectX::XM_PI * (timeGetTime() % 3000)) / 1500.0f;
+	matY = DirectX::XMMatrixRotationY(rotate);
+	rotate = static_cast<FLOAT>(DirectX::XM_PI * (timeGetTime() % 1500)) / 750.0f;
+	matX = DirectX::XMMatrixRotationX(rotate);
+	DirectX::XMStoreFloat4x4(&m_changesEveryObject.World, DirectX::XMMatrixTranspose(matY * matX));
+
+	result = m_immediateContext->Map(m_constantBufferChangesEveryObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"ID3D11DeviceContext::Map() failed.");
+	}
+	memcpy(mappedResource.pData, &m_changesEveryObject, sizeof(ChangesEveryObject));
+	m_immediateContext->Unmap(m_constantBufferChangesEveryObject, 0);
+
 	ID3D11Buffer *vertBuffers[] = { m_xyzVertBuffer, m_colorVertBuffer };
 	UINT strides[] = { sizeof(XYZBuffer), sizeof(ColBuffer) };
 	UINT offsets[] = { 0, 0 };
@@ -682,12 +689,27 @@ HRESULT Application::render()
 	m_immediateContext->IASetInputLayout(m_inputLayout);
 	m_immediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+	ID3D11Buffer *constantBuffers[] = { m_constantBufferNeverChanges, m_constantBufferChangesEveryFrame, m_constantBufferChangesEveryObject };
+	m_immediateContext->VSSetShader(m_vertexShader, nullptr, 0);
+	m_immediateContext->VSSetConstantBuffers(0, 3, constantBuffers);
+	
+	m_immediateContext->GSSetShader(m_geometryShader, nullptr, 0);
+	m_immediateContext->GSSetConstantBuffers(0, 3, constantBuffers);
+	
 	m_immediateContext->RSSetViewports(1, &m_viewPort);
 	m_immediateContext->RSSetState(m_rasterizerState);
-	m_immediateContext->OMSetRenderTargets(1, &m_renderTargetView.p, nullptr);
+
+	m_immediateContext->PSSetShader(m_pixelShader, nullptr, 0);
+	m_immediateContext->PSSetConstantBuffers(0, 3, constantBuffers);
+
+	m_immediateContext->OMSetRenderTargets(1, &m_renderTargetView.p, m_depthMode ? m_depthStencilView : nullptr);
 
 	FLOAT blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	m_immediateContext->OMSetBlendState(m_blendState, blendFactor, 0);
+	m_immediateContext->OMSetBlendState(m_blendState, blendFactor, 0xffffffff);
+	m_immediateContext->OMSetDepthStencilState(m_depthStencilState, 0);
+
+	m_immediateContext->DrawIndexed(36, 0, 0);
+
 	result = m_swapChain->Present(0, 0);
 	if (FAILED(result)) {
 		return TRACE_ERROR(result, L"IDXGISwapChain::Present() failed.");
@@ -738,6 +760,9 @@ LRESULT Application::onKeyDown(UINT msg, WPARAM wParam, LPARAM lParam)
 	case VK_ESCAPE:
 		PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
 		break;
+	case VK_F2:
+		m_depthMode = !m_depthMode;
+		break;
 	case VK_F5:
 		if (m_swapChain != nullptr) {
 			BOOL fullScreen;
@@ -769,8 +794,8 @@ LRESULT Application::onKeyDown(UINT msg, WPARAM wParam, LPARAM lParam)
 
 LRESULT Application::onSize(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	m_width = HIWORD(lParam);
-	m_height = LOWORD(lParam);
+	m_width = LOWORD(lParam);
+	m_height = HIWORD(lParam);
 
 	if (m_device != nullptr && wParam != SIZE_MINIMIZED) {
 		m_immediateContext->OMSetRenderTargets(0, nullptr, nullptr);

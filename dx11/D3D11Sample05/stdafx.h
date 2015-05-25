@@ -18,6 +18,7 @@
 #include <Windows.h>
 #include <crtdbg.h>
 #include <atlbase.h>
+#include <mmsystem.h>
 
 #include <initguid.h>
 #include <dxgi.h>
