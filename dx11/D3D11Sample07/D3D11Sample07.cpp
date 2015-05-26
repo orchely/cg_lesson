@@ -44,6 +44,11 @@ private:
 	static const std::wstring m_title;
 	static const std::wstring m_windowClass;
 
+#if defined(_DEBUG)
+	DWORD m_prevFpsTime;
+	DWORD m_frameCount;
+#endif
+
 	bool m_stanbyMode;
 	bool m_depthMode;
 
@@ -79,6 +84,10 @@ m_hInstance(nullptr),
 m_hWnd(nullptr),
 m_width(1280),
 m_height(720),
+#if defined(_DEBUG)
+m_prevFpsTime(0),
+m_frameCount(0),
+#endif
 m_stanbyMode(false),
 m_depthMode(true),
 m_clearColor({ 0.0f, 0.125f, 0.3f, 1.0f }),
@@ -172,6 +181,7 @@ HRESULT Application::initializeDirect3D()
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.SampleDesc.Quality = 0;
 	swapChainDesc.Windowed = TRUE;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 #if defined(_DEBUG)
@@ -555,10 +565,22 @@ HRESULT Application::render()
 
 	m_immediateContext->Draw(36, 0);
 
-	result = m_swapChain->Present(0, 0);
+	result = m_swapChain->Present(1, 0);
 	if (FAILED(result)) {
 		return TRACE_ERROR(result, L"IDXGISwapChain::Present() failed.");
 	}
+
+#if defined(_DEBUG)
+	m_frameCount++;
+	DWORD time = timeGetTime();
+	if (time - m_prevFpsTime >= 1000) {
+		std::wstringstream ss;
+		ss << m_frameCount << L"fps" << std::endl;
+		OutputDebugStringW(ss.str().c_str());
+		m_frameCount = 0;
+		m_prevFpsTime = time;
+	}
+#endif
 
 	return S_OK;
 }
