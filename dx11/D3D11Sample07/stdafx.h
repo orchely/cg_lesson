@@ -20,4 +20,4 @@
 #include <d3d11.h>
 
 #include <DirectXMath.h>
-#include <WICTextureLoader.h>
+#include <DirectXTex.h>

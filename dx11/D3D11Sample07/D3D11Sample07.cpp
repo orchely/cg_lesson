@@ -302,11 +302,20 @@ HRESULT Application::initializeDirect3D()
 		return TRACE_ERROR(result, L"ID3D11Device::CreateDepthStencilState() failed.");
 	}
 
-	Microsoft::WRL::ComPtr<ID3D11Resource> texture;
-	result = DirectX::CreateWICTextureFromFile(m_device.Get(), L"..\\misc\\texture2.png", &texture, &m_textureShaderResourceView);
+	// load texture
+	DirectX::TexMetadata metadata;
+	DirectX::ScratchImage image;
+	result = DirectX::LoadFromWICFile(L"..\\misc\\texture2.png", 0, &metadata, image);
 	if (FAILED(result)) {
-		return TRACE_ERROR(result, L"DirectX::CreateWICTextureFromFile() failed.");
+		return TRACE_ERROR(result, L"DirectX::LoadFromWICFile() failed.");
 	}
+	result = DirectX::CreateShaderResourceView(m_device.Get(), image.GetImages(), image.GetImageCount(), metadata, &m_textureShaderResourceView);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"DirectX::CreateShaderResourceView() failed.");
+	}
+
+	Microsoft::WRL::ComPtr<ID3D11Resource> texture;
+	m_textureShaderResourceView->GetResource(&texture);
 
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;

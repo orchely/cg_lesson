@@ -90,8 +90,8 @@
     <ProjectReference Include="..\Common\Common.vcxproj">
       <Project>{9d13129f-e13d-49a5-89da-09f7e391ae8d}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\DirectXTK\DirectXTK_Desktop_2013.vcxproj">
-      <Project>{e0b52ae7-e160-4d32-bf3f-910b785e5a8e}</Project>
+    <ProjectReference Include="..\DirectXTex\DirectXTex\DirectXTex_Desktop_2013.vcxproj">
+      <Project>{371b9fa9-4c90-4ac6-a123-aced756d6c77}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
