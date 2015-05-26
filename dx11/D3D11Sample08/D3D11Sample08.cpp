@@ -76,8 +76,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
 };
 
-const std::wstring Application::m_title { L"Direct3D 11 Sample07" };
-const std::wstring Application::m_windowClass { L"D3D11D07" };
+const std::wstring Application::m_title{ L"Direct3D 11 Sample08" };
+const std::wstring Application::m_windowClass{ L"D3D11D08" };
 
 Application::Application() :
 m_hInstance(nullptr),
@@ -150,7 +150,7 @@ HRESULT Application::initializeWindow()
 		return TRACE_ERROR(GetLastError(), L"RegisterClassW() failed.");
 	}
 
-	RECT rect { 0, 0, m_width, m_height };
+	RECT rect{ 0, 0, m_width, m_height };
 	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, TRUE);
 
 	if (CreateWindowExW(0, m_windowClass.c_str(), m_title.c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, m_width, m_height, nullptr, nullptr, m_hInstance, this) == nullptr) {
@@ -218,7 +218,7 @@ HRESULT Application::initializeDirect3D()
 
 	// vertex shader
 	std::vector<uint8_t> vsBlob;
-	result = readFile(L"D3D11Sample07Vs.cso", vsBlob);
+	result = readFile(L"D3D11Sample08Vs.cso", vsBlob);
 	if (FAILED(result)) {
 		return result;
 	}
@@ -229,7 +229,7 @@ HRESULT Application::initializeDirect3D()
 
 	// geometry shader
 	std::vector<uint8_t> gsBlob;
-	result = readFile(L"D3D11Sample07Gs.cso", gsBlob);
+	result = readFile(L"D3D11Sample08Gs.cso", gsBlob);
 	if (FAILED(result)) {
 		return result;
 	}
@@ -240,7 +240,7 @@ HRESULT Application::initializeDirect3D()
 
 	// pixel shader
 	std::vector<uint8_t> psBlob;
-	result = readFile(L"D3D11Sample07Ps.cso", psBlob);
+	result = readFile(L"D3D11Sample08Ps.cso", psBlob);
 	if (FAILED(result)) {
 		return result;
 	}
@@ -312,20 +312,52 @@ HRESULT Application::initializeDirect3D()
 		return TRACE_ERROR(result, L"ID3D11Device::CreateDepthStencilState() failed.");
 	}
 
-	// load texture
-	DirectX::TexMetadata metadata;
-	DirectX::ScratchImage image;
-	result = DirectX::LoadFromWICFile(L"..\\misc\\texture2.png", 0, &metadata, image);
+	// create texture
+	size_t resizedWidth = 256;
+	size_t resizedHeight = 256;
+	size_t mipLevel = 8;
+	DirectX::ScratchImage sourceImage;
+	result = DirectX::LoadFromWICFile(L"..\\misc\\texture2.png", 0, nullptr, sourceImage);
 	if (FAILED(result)) {
 		return TRACE_ERROR(result, L"DirectX::LoadFromWICFile() failed.");
 	}
-	result = DirectX::CreateShaderResourceView(m_device.Get(), image.GetImages(), image.GetImageCount(), metadata, &m_textureShaderResourceView);
+	DirectX::ScratchImage resizedImage;
+	result = DirectX::Resize(*sourceImage.GetImages(), resizedWidth, resizedHeight, DirectX::TEX_FILTER_LINEAR, resizedImage);
 	if (FAILED(result)) {
-		return TRACE_ERROR(result, L"DirectX::CreateShaderResourceView() failed.");
+		return TRACE_ERROR(result, L"DirectX::Resize() failed.");
+	}
+	DirectX::ScratchImage mipChain;
+	result = DirectX::GenerateMipMaps(*resizedImage.GetImages(), DirectX::TEX_FILTER_LINEAR, mipLevel, mipChain);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"DirectX::GenerateMipMaps() failed.");
 	}
 
+	DirectX::TexMetadata metadata;
+	metadata.width = resizedWidth;
+	metadata.height = resizedHeight;
+	metadata.depth = 0;
+	metadata.arraySize = 1;
+	metadata.mipLevels = mipLevel;
+	metadata.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
+	metadata.miscFlags = 0;
+	metadata.miscFlags2 = 0;
+	metadata.format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
 	Microsoft::WRL::ComPtr<ID3D11Resource> texture;
-	m_textureShaderResourceView->GetResource(&texture);
+	result = DirectX::CreateTexture(m_device.Get(), mipChain.GetImages(), mipChain.GetImageCount(), metadata, &texture);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"DirectX::CreateTexture() failed.");
+	}
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
+	resourceViewDesc.Format = metadata.format;
+	resourceViewDesc.ViewDimension = D3D_SRV_DIMENSION_TEXTURE2D;
+	resourceViewDesc.Texture2D.MostDetailedMip = 0;
+	resourceViewDesc.Texture2D.MipLevels = -1;
+	result = m_device->CreateShaderResourceView(texture.Get(), &resourceViewDesc, &m_textureShaderResourceView);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"ID3D11Device::CreateShaderResourceView() failed.");
+	}
 
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -352,40 +384,40 @@ HRESULT Application::initializeDirect3D()
 
 	switch (type) {
 	case D3D11_RESOURCE_DIMENSION_TEXTURE1D:
-		{
-			ID3D11Texture1D *texture1D = reinterpret_cast<ID3D11Texture1D*>(texture.Get());
-			D3D11_TEXTURE1D_DESC desc;
-			texture1D->GetDesc(&desc);
-			std::wstringstream ss;
-			ss << L"1DTexture Width=" << desc.Width << std::endl;
-			OutputDebugStringW(ss.str().c_str());
-			break;
-		}
+	{
+		ID3D11Texture1D *texture1D = reinterpret_cast<ID3D11Texture1D*>(texture.Get());
+		D3D11_TEXTURE1D_DESC desc;
+		texture1D->GetDesc(&desc);
+		std::wstringstream ss;
+		ss << L"1DTexture Width=" << desc.Width << std::endl;
+		OutputDebugStringW(ss.str().c_str());
+		break;
+	}
 	case D3D11_RESOURCE_DIMENSION_TEXTURE2D:
-		{
-			ID3D11Texture2D *texture2D = reinterpret_cast<ID3D11Texture2D*>(texture.Get());
-			D3D11_TEXTURE2D_DESC desc;
-			texture2D->GetDesc(&desc);
-			std::wstringstream ss;
-			ss << L"2DTexture Width=" << desc.Width << L" Height=" << desc.Height << std::endl;
-			OutputDebugStringW(ss.str().c_str());
-			break;
-		}
+	{
+		ID3D11Texture2D *texture2D = reinterpret_cast<ID3D11Texture2D*>(texture.Get());
+		D3D11_TEXTURE2D_DESC desc;
+		texture2D->GetDesc(&desc);
+		std::wstringstream ss;
+		ss << L"2DTexture Width=" << desc.Width << L" Height=" << desc.Height << std::endl;
+		OutputDebugStringW(ss.str().c_str());
+		break;
+	}
 	case D3D11_RESOURCE_DIMENSION_TEXTURE3D:
-		{
-			ID3D11Texture3D *texture3D = reinterpret_cast<ID3D11Texture3D*>(texture.Get());
-			D3D11_TEXTURE3D_DESC desc;
-			texture3D->GetDesc(&desc);
-			std::wstringstream ss;
-			ss << L"3DTexture Width=" << desc.Width << L" Height=" << desc.Height << " Depth=" << desc.Depth << std::endl;
-			OutputDebugStringW(ss.str().c_str());
-			break;
-		}
+	{
+		ID3D11Texture3D *texture3D = reinterpret_cast<ID3D11Texture3D*>(texture.Get());
+		D3D11_TEXTURE3D_DESC desc;
+		texture3D->GetDesc(&desc);
+		std::wstringstream ss;
+		ss << L"3DTexture Width=" << desc.Width << L" Height=" << desc.Height << " Depth=" << desc.Depth << std::endl;
+		OutputDebugStringW(ss.str().c_str());
+		break;
+	}
 	default:
-		{
-			OutputDebugStringW(L"UNKNOWN or BUFFER resource\n");
-			break;
-		}
+	{
+		OutputDebugStringW(L"UNKNOWN or BUFFER resource\n");
+		break;
+	}
 	}
 #endif
 
@@ -682,7 +714,8 @@ WPARAM Application::run()
 		if (PeekMessageW(&msg, 0, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
-		} else {
+		}
+		else {
 			if (!onIdle()) {
 				DestroyWindow(m_hWnd);
 			}
