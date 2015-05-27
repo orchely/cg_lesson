@@ -52,7 +52,7 @@ private:
 	bool m_stanbyMode;
 	bool m_depthMode;
 
-	std::array<FLOAT, 4> m_clearColor;
+	std::array<std::array<FLOAT, 4>, 2> m_clearColor;
 	DirectX::XMFLOAT3 m_lightPosition;
 
 	struct ConstantBuffer m_constantBufferData;
@@ -74,10 +74,16 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_textureShaderResourceView;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_renderTargetTexture;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetTextureRenderTargetView;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_renderTargetTextureShaderResourceView;
+	D3D11_VIEWPORT m_renderTargetTextureViewPort;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_renderTargetTextureDepthStencil;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_renderTargetTextureDepthStencilView;
 };
 
-const std::wstring Application::m_title{ L"Direct3D 11 Sample08" };
-const std::wstring Application::m_windowClass{ L"D3D11D08" };
+const std::wstring Application::m_title { L"Direct3D 11 Sample09" };
+const std::wstring Application::m_windowClass { L"D3D11D09" };
 
 Application::Application() :
 m_hInstance(nullptr),
@@ -90,7 +96,7 @@ m_frameCount(0),
 #endif
 m_stanbyMode(false),
 m_depthMode(true),
-m_clearColor({ { 0.0f, 0.125f, 0.3f, 1.0f } }),
+m_clearColor({ { { { 0.0f, 0.125f, 0.3f, 1.0f } }, { { 0.3f, 0.125f, 0.0f, 1.0f } } } }),
 m_lightPosition(3.0f, 3.0f, -3.0f),
 m_constantBufferData(),
 m_featureLevel(D3D_FEATURE_LEVEL_9_1),
@@ -109,7 +115,13 @@ m_blendState(),
 m_rasterizerState(),
 m_depthStencilState(),
 m_textureShaderResourceView(),
-m_samplerState()
+m_samplerState(),
+m_renderTargetTexture(),
+m_renderTargetTextureRenderTargetView(),
+m_renderTargetTextureShaderResourceView(),
+m_renderTargetTextureViewPort(),
+m_renderTargetTextureDepthStencil(),
+m_renderTargetTextureDepthStencilView()
 {
 }
 
@@ -150,7 +162,7 @@ HRESULT Application::initializeWindow()
 		return TRACE_ERROR(GetLastError(), L"RegisterClassW() failed.");
 	}
 
-	RECT rect{ 0, 0, m_width, m_height };
+	RECT rect { 0, 0, m_width, m_height };
 	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, TRUE);
 
 	if (CreateWindowExW(0, m_windowClass.c_str(), m_title.c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, m_width, m_height, nullptr, nullptr, m_hInstance, this) == nullptr) {
@@ -218,7 +230,7 @@ HRESULT Application::initializeDirect3D()
 
 	// vertex shader
 	std::vector<uint8_t> vsBlob;
-	result = readFile(L"D3D11Sample08Vs.cso", vsBlob);
+	result = readFile(L"D3D11Sample09Vs.cso", vsBlob);
 	if (FAILED(result)) {
 		return result;
 	}
@@ -229,7 +241,7 @@ HRESULT Application::initializeDirect3D()
 
 	// geometry shader
 	std::vector<uint8_t> gsBlob;
-	result = readFile(L"D3D11Sample08Gs.cso", gsBlob);
+	result = readFile(L"D3D11Sample09Gs.cso", gsBlob);
 	if (FAILED(result)) {
 		return result;
 	}
@@ -240,7 +252,7 @@ HRESULT Application::initializeDirect3D()
 
 	// pixel shader
 	std::vector<uint8_t> psBlob;
-	result = readFile(L"D3D11Sample08Ps.cso", psBlob);
+	result = readFile(L"D3D11Sample09Ps.cso", psBlob);
 	if (FAILED(result)) {
 		return result;
 	}
@@ -312,52 +324,20 @@ HRESULT Application::initializeDirect3D()
 		return TRACE_ERROR(result, L"ID3D11Device::CreateDepthStencilState() failed.");
 	}
 
-	// create texture
-	size_t resizedWidth = 256;
-	size_t resizedHeight = 256;
-	size_t mipLevel = 8;
-	DirectX::ScratchImage sourceImage;
-	result = DirectX::LoadFromWICFile(L"..\\misc\\texture2.png", 0, nullptr, sourceImage);
+	// load texture
+	DirectX::TexMetadata metadata;
+	DirectX::ScratchImage image;
+	result = DirectX::LoadFromWICFile(L"..\\misc\\texture2.png", 0, &metadata, image);
 	if (FAILED(result)) {
 		return TRACE_ERROR(result, L"DirectX::LoadFromWICFile() failed.");
 	}
-	DirectX::ScratchImage resizedImage;
-	result = DirectX::Resize(*sourceImage.GetImages(), resizedWidth, resizedHeight, DirectX::TEX_FILTER_LINEAR, resizedImage);
+	result = DirectX::CreateShaderResourceView(m_device.Get(), image.GetImages(), image.GetImageCount(), metadata, &m_textureShaderResourceView);
 	if (FAILED(result)) {
-		return TRACE_ERROR(result, L"DirectX::Resize() failed.");
+		return TRACE_ERROR(result, L"DirectX::CreateShaderResourceView() failed.");
 	}
-	DirectX::ScratchImage mipChain;
-	result = DirectX::GenerateMipMaps(*resizedImage.GetImages(), DirectX::TEX_FILTER_LINEAR, mipLevel, mipChain);
-	if (FAILED(result)) {
-		return TRACE_ERROR(result, L"DirectX::GenerateMipMaps() failed.");
-	}
-
-	DirectX::TexMetadata metadata;
-	metadata.width = resizedWidth;
-	metadata.height = resizedHeight;
-	metadata.depth = 0;
-	metadata.arraySize = 1;
-	metadata.mipLevels = mipLevel;
-	metadata.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
-	metadata.miscFlags = 0;
-	metadata.miscFlags2 = 0;
-	metadata.format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	Microsoft::WRL::ComPtr<ID3D11Resource> texture;
-	result = DirectX::CreateTexture(m_device.Get(), mipChain.GetImages(), mipChain.GetImageCount(), metadata, &texture);
-	if (FAILED(result)) {
-		return TRACE_ERROR(result, L"DirectX::CreateTexture() failed.");
-	}
-
-	D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
-	resourceViewDesc.Format = metadata.format;
-	resourceViewDesc.ViewDimension = D3D_SRV_DIMENSION_TEXTURE2D;
-	resourceViewDesc.Texture2D.MostDetailedMip = 0;
-	resourceViewDesc.Texture2D.MipLevels = -1;
-	result = m_device->CreateShaderResourceView(texture.Get(), &resourceViewDesc, &m_textureShaderResourceView);
-	if (FAILED(result)) {
-		return TRACE_ERROR(result, L"ID3D11Device::CreateShaderResourceView() failed.");
-	}
+	m_textureShaderResourceView->GetResource(&texture);
 
 	D3D11_SAMPLER_DESC samplerDesc;
 	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -378,48 +358,74 @@ HRESULT Application::initializeDirect3D()
 		return TRACE_ERROR(result, L"ID3D11Device::CreateSamplerState() failed.");
 	}
 
-#if defined(_DEBUG)
-	D3D11_RESOURCE_DIMENSION type;
-	texture->GetType(&type);
+	// create render target texture
+	D3D11_TEXTURE2D_DESC renderTargetTextureDesc;
+	memset(&renderTargetTextureDesc, 0, sizeof(renderTargetTextureDesc));
+	renderTargetTextureDesc.Width = 256;
+	renderTargetTextureDesc.Height = 256;
+	renderTargetTextureDesc.MipLevels = 1;
+	renderTargetTextureDesc.ArraySize = 1;
+	renderTargetTextureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	renderTargetTextureDesc.SampleDesc.Count = 1;
+	renderTargetTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+	renderTargetTextureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	result = m_device->CreateTexture2D(&renderTargetTextureDesc, nullptr, &m_renderTargetTexture);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"D3D11Device::CreateTexture2D() failed.");
+	}
 
-	switch (type) {
-	case D3D11_RESOURCE_DIMENSION_TEXTURE1D:
-	{
-		ID3D11Texture1D *texture1D = reinterpret_cast<ID3D11Texture1D*>(texture.Get());
-		D3D11_TEXTURE1D_DESC desc;
-		texture1D->GetDesc(&desc);
-		std::wstringstream ss;
-		ss << L"1DTexture Width=" << desc.Width << std::endl;
-		OutputDebugStringW(ss.str().c_str());
-		break;
+	D3D11_RENDER_TARGET_VIEW_DESC renderTargetRenderTargetViewDesc;
+	renderTargetRenderTargetViewDesc.Format = renderTargetTextureDesc.Format;
+	renderTargetRenderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	renderTargetRenderTargetViewDesc.Texture2D.MipSlice = 0;
+	result = m_device->CreateRenderTargetView(m_renderTargetTexture.Get(), &renderTargetRenderTargetViewDesc, &m_renderTargetTextureRenderTargetView);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"D3D11Device::CreateRenderTargetView() failed.");
 	}
-	case D3D11_RESOURCE_DIMENSION_TEXTURE2D:
-	{
-		ID3D11Texture2D *texture2D = reinterpret_cast<ID3D11Texture2D*>(texture.Get());
-		D3D11_TEXTURE2D_DESC desc;
-		texture2D->GetDesc(&desc);
-		std::wstringstream ss;
-		ss << L"2DTexture Width=" << desc.Width << L" Height=" << desc.Height << std::endl;
-		OutputDebugStringW(ss.str().c_str());
-		break;
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC renderTargetTextureShaderResourceViewDesc;
+	renderTargetTextureShaderResourceViewDesc.Format = renderTargetTextureDesc.Format;
+	renderTargetTextureShaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	renderTargetTextureShaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+	renderTargetTextureShaderResourceViewDesc.Texture2D.MipLevels = 1;
+	result = m_device->CreateShaderResourceView(m_renderTargetTexture.Get(), &renderTargetTextureShaderResourceViewDesc, &m_renderTargetTextureShaderResourceView);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"D3D11Device::CreateShaderResourceView() failed.");
 	}
-	case D3D11_RESOURCE_DIMENSION_TEXTURE3D:
-	{
-		ID3D11Texture3D *texture3D = reinterpret_cast<ID3D11Texture3D*>(texture.Get());
-		D3D11_TEXTURE3D_DESC desc;
-		texture3D->GetDesc(&desc);
-		std::wstringstream ss;
-		ss << L"3DTexture Width=" << desc.Width << L" Height=" << desc.Height << " Depth=" << desc.Depth << std::endl;
-		OutputDebugStringW(ss.str().c_str());
-		break;
+
+	m_renderTargetTextureViewPort.TopLeftX = 0.0f;
+	m_renderTargetTextureViewPort.TopLeftY = 0.0f;
+	m_renderTargetTextureViewPort.Width = static_cast<FLOAT>(renderTargetTextureDesc.Width);
+	m_renderTargetTextureViewPort.Height = static_cast<FLOAT>(renderTargetTextureDesc.Height);
+	m_renderTargetTextureViewPort.MinDepth = 0.0f;
+	m_renderTargetTextureViewPort.MaxDepth = 1.0f;
+
+	D3D11_TEXTURE2D_DESC renderTargetTextureDepthStencilDesc;
+	renderTargetTextureDepthStencilDesc.Width = 256;
+	renderTargetTextureDepthStencilDesc.Height = 256;
+	renderTargetTextureDepthStencilDesc.MipLevels = 1;
+	renderTargetTextureDepthStencilDesc.ArraySize = 1;
+	renderTargetTextureDepthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	renderTargetTextureDepthStencilDesc.SampleDesc.Count = 1;
+	renderTargetTextureDepthStencilDesc.SampleDesc.Quality = 0;
+	renderTargetTextureDepthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	renderTargetTextureDepthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	renderTargetTextureDepthStencilDesc.CPUAccessFlags = 0;
+	renderTargetTextureDepthStencilDesc.MiscFlags = 0;
+	result = m_device->CreateTexture2D(&renderTargetTextureDepthStencilDesc, nullptr, &m_renderTargetTextureDepthStencil);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"D3D11Device::CreateTexture2D() failed.");
 	}
-	default:
-	{
-		OutputDebugStringW(L"UNKNOWN or BUFFER resource\n");
-		break;
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC renderTargetTextureDepthStencilViewDesc;
+	renderTargetTextureDepthStencilViewDesc.Format = renderTargetTextureDepthStencilDesc.Format;
+	renderTargetTextureDepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	renderTargetTextureDepthStencilViewDesc.Flags = 0;
+	renderTargetTextureDepthStencilViewDesc.Texture2D.MipSlice = 0;
+	result = m_device->CreateDepthStencilView(m_renderTargetTextureDepthStencil.Get(), &renderTargetTextureDepthStencilViewDesc, &m_renderTargetTextureDepthStencilView);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"D3D11Device::CreateDepthStencilView() failed.");
 	}
-	}
-#endif
 
 	result = initializeBackBuffer();
 	if (FAILED(result)) {
@@ -544,8 +550,6 @@ bool Application::onIdle()
 HRESULT Application::render()
 {
 	HRESULT result = S_OK;
-	m_immediateContext->ClearRenderTargetView(m_renderTargetView.Get(), m_clearColor.data());
-	m_immediateContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	DirectX::XMVECTORF32 eyePosition = { 0.0f, 5.0f, -5.0f, 1.0f };
 	DirectX::XMVECTORF32 focusPosition = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -586,14 +590,34 @@ HRESULT Application::render()
 	m_immediateContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 	m_immediateContext->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 
-	m_immediateContext->PSSetShaderResources(0, 1, m_textureShaderResourceView.GetAddressOf());
-	m_immediateContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-
 	m_immediateContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthMode ? m_depthStencilView.Get() : nullptr);
 
 	FLOAT blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	m_immediateContext->OMSetBlendState(m_blendState.Get(), blendFactor, 0xffffffff);
 	m_immediateContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+
+	m_immediateContext->ClearRenderTargetView(m_renderTargetTextureRenderTargetView.Get(), m_clearColor[1].data());
+	m_immediateContext->ClearDepthStencilView(m_renderTargetTextureDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	
+	m_immediateContext->RSSetViewports(1, &m_renderTargetTextureViewPort);
+
+	m_immediateContext->PSSetShaderResources(0, 1, m_textureShaderResourceView.GetAddressOf());
+	m_immediateContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
+	m_immediateContext->OMSetRenderTargets(1, m_renderTargetTextureRenderTargetView.GetAddressOf(), m_renderTargetTextureDepthStencilView.Get());
+
+	m_immediateContext->Draw(36, 0);
+
+	m_immediateContext->OMSetRenderTargets(0, nullptr, nullptr);
+
+	m_immediateContext->ClearRenderTargetView(m_renderTargetView.Get(), m_clearColor[0].data());
+	m_immediateContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	m_immediateContext->RSSetViewports(1, &m_viewPort);
+
+	m_immediateContext->PSSetShaderResources(0, 1, m_renderTargetTextureShaderResourceView.GetAddressOf());
+	m_immediateContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
+
+	m_immediateContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthMode ? m_depthStencilView.Get() : nullptr);
 
 	m_immediateContext->Draw(36, 0);
 
@@ -714,8 +738,7 @@ WPARAM Application::run()
 		if (PeekMessageW(&msg, 0, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
-		}
-		else {
+		} else {
 			if (!onIdle()) {
 				DestroyWindow(m_hWnd);
 			}

@@ -90,7 +90,7 @@ m_frameCount(0),
 #endif
 m_stanbyMode(false),
 m_depthMode(true),
-m_clearColor({ 0.0f, 0.125f, 0.3f, 1.0f }),
+m_clearColor({ { 0.0f, 0.125f, 0.3f, 1.0f } }),
 m_lightPosition(3.0f, 3.0f, -3.0f),
 m_constantBufferData(),
 m_featureLevel(D3D_FEATURE_LEVEL_9_1),
