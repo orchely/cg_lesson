@@ -1,0 +1,6 @@
+newmtl Cube
+Kd 1.0 1.0 1.0
+map_Kd ..\misc\image.dds
+newmtl Sphere
+Kd 1.0 1.0 1.0
+map_Kd ..\misc\image.dds

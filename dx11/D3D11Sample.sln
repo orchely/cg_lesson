@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D3D11Sample11", "D3D11Sampl
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D3D11Sample12", "D3D11Sample12\D3D11Sample12.vcxproj", "{05DE3BE7-BDAE-4556-A0B3-FA44F9B02B6E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D3D11Sample13", "D3D11Sample13\D3D11Sample13.vcxproj", "{26159F98-807C-40A6-A9CF-43A148CF2BF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -87,6 +89,10 @@ Global
 		{05DE3BE7-BDAE-4556-A0B3-FA44F9B02B6E}.Debug|x64.Build.0 = Debug|x64
 		{05DE3BE7-BDAE-4556-A0B3-FA44F9B02B6E}.Release|x64.ActiveCfg = Release|x64
 		{05DE3BE7-BDAE-4556-A0B3-FA44F9B02B6E}.Release|x64.Build.0 = Release|x64
+		{26159F98-807C-40A6-A9CF-43A148CF2BF9}.Debug|x64.ActiveCfg = Debug|x64
+		{26159F98-807C-40A6-A9CF-43A148CF2BF9}.Debug|x64.Build.0 = Debug|x64
+		{26159F98-807C-40A6-A9CF-43A148CF2BF9}.Release|x64.ActiveCfg = Release|x64
+		{26159F98-807C-40A6-A9CF-43A148CF2BF9}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
