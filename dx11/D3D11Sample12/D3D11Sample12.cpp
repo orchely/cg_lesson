@@ -163,14 +163,14 @@ HRESULT Application::initializeWindow()
 	wc.lpszClassName = m_windowClass.c_str();
 
 	if (RegisterClassW(&wc) == 0) {
-		return TRACE_ERROR(GetLastError(), L"RegisterClassW() failed.");
+		return TRACE_ERROR(HRESULT_FROM_WIN32(GetLastError()), L"RegisterClassW() failed.");
 	}
 
 	RECT rect{ 0, 0, m_width, m_height };
 	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, TRUE);
 
 	if (CreateWindowExW(0, m_windowClass.c_str(), m_title.c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, m_width, m_height, nullptr, nullptr, m_hInstance, this) == nullptr) {
-		return TRACE_ERROR(GetLastError(), L"CreateWindowExW() failed.");
+		return TRACE_ERROR(HRESULT_FROM_WIN32(GetLastError()), L"CreateWindowExW() failed.");
 	}
 
 	ShowWindow(m_hWnd, SW_SHOWNORMAL);

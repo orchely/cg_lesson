@@ -66,7 +66,7 @@ HRESULT CreateShader()
 	HRESULT result = S_OK;
 
 	std::vector<uint8_t> csBlob;
-	result = readFile(L"D3D11Sample19.cso", csBlob);
+	result = readFile(L"D3D11Sample19Cs.cso", csBlob);
 	if (FAILED(result)) {
 		return result;
 	}
@@ -99,7 +99,7 @@ HRESULT CreateConstantBuffer()
 
 HRESULT CreateResource()
 {
-	std::array<float, DATA_SIZE> initialData;
+	std::vector<float> initialData(DATA_SIZE);
 	for (float &data : initialData) {
 		data = 1.0f;
 	}
@@ -171,6 +171,26 @@ HRESULT CreateShaderResourceView()
 	return result;
 }
 
+HRESULT CreateUnorderedAccessView()
+{
+	D3D11_UNORDERED_ACCESS_VIEW_DESC viewDesc;
+	memset(&viewDesc, 0, sizeof(viewDesc));
+	viewDesc.Format = DXGI_FORMAT_UNKNOWN;
+	viewDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	viewDesc.Buffer.NumElements = DATA_SIZE;
+
+	HRESULT result = S_OK;
+
+	for (int i = 0; i < 2; i++) {
+		result = device->CreateUnorderedAccessView(buffer[i].Get(), &viewDesc, &unorderedAccessView[i]);
+		if (FAILED(result)) {
+			return TRACE_ERROR(result, L"ID3D11Device::CreateUnorderedAccessView() failed.");
+		}
+	}
+
+	return result;
+}
+
 HRESULT ComputeShader()
 {
 	HRESULT result = S_OK;
@@ -183,7 +203,7 @@ HRESULT ComputeShader()
 	bool resourceFlag = false;
 	ID3D11ShaderResourceView *nullShaderResourceView = nullptr;
 	do {
-		resourceFlag != resourceFlag;
+		resourceFlag = !resourceFlag;
 		deviceContext->CSSetShaderResources(0, 1, &nullShaderResourceView);
 		deviceContext->CSSetUnorderedAccessViews(0, 1, unorderedAccessView[resourceFlag ? 1 : 0].GetAddressOf(), nullptr);
 		deviceContext->CSSetShaderResources(0, 1, shaderResourceView[resourceFlag ? 0 : 1].GetAddressOf());
@@ -197,34 +217,74 @@ HRESULT ComputeShader()
 		memcpy(mappedResource.pData, &constantBufferData, sizeof(constantBufferData));
 		deviceContext->Unmap(constantBuffer.Get(), 0);
 
-	}
+		unsigned int threadGroup = (dataCount + 127) / 128;
+		deviceContext->Dispatch(threadGroup, 1, 1);
 
+		dataCount = threadGroup;
+	} while (dataCount > 1);
 
-}
+	DWORD t1 = timeGetTime();
 
-
-HRESULT CreateUnorderedAccessView()
-{
-	D3D11_UNORDERED_ACCESS_VIEW_DESC viewDesc;
-	memset(&viewDesc, 0, sizeof(viewDesc));
-	viewDesc.Format = DXGI_FORMAT_UNKNOWN;
-	viewDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	viewDesc.Buffer.NumElements = DATA_SIZE;
-
-	HRESULT result = S_OK;
+	D3D11_BOX box;
+	box.left = 0;
+	box.right = sizeof(float);
+	box.top = 0;
+	box.bottom = 1;
+	box.front = 0;
+	box.back = 1;
+	deviceContext->CopySubresourceRegion(readBackBuffer.Get(), 0, 0, 0, 0, buffer[resourceFlag ? 1 : 0].Get(), 0, &box);
 	
-	for (int i = 0; i < 2; i++) {
-		result = device->CreateUnorderedAccessView(buffer[i].Get(), &viewDesc, &unorderedAccessView[i]);
-		if (FAILED(result)) {
-			return TRACE_ERROR(result, L"ID3D11Device::CreateUnorderedAccessView() failed.");
-		}
+	DWORD t2 = timeGetTime();
+
+	D3D11_MAPPED_SUBRESOURCE mappedResource = { 0 };
+	result = deviceContext->Map(readBackBuffer.Get(), 0, D3D11_MAP_READ, 0, &mappedResource);
+	if (FAILED(result)) {
+		return TRACE_ERROR(result, L"D3D11DeviceContext::Map");
 	}
+	float sum = *static_cast<float*>(mappedResource.pData);
+	deviceContext->Unmap(readBackBuffer.Get(), 0);
+
+	DWORD t3 = timeGetTime();
+
+	wprintf_s(L"[GPU] %u ms - %u ms - %u ms [SUM = %f]\n", t1 - t0, t2 - t1, t3 - t1, sum);
 
 	return result;
 }
 
 int wmain(int argc, wchar_t* argv[])
 {
-	return 0;
+	HRESULT result = S_OK;
+
+	result = CreateDevice();
+	if (FAILED(result)) {
+		return result;
+	}
+
+	result = CreateShader();
+	if (FAILED(result)) {
+		return result;
+	}
+
+	result = CreateConstantBuffer();
+	if (FAILED(result)) {
+		return result;
+	}
+
+	result = CreateResource();
+	if (FAILED(result)) {
+		return result;
+	}
+
+	result = CreateUnorderedAccessView();
+	if (FAILED(result)) {
+		return result;
+	}
+
+	result = ComputeShader();
+	if (FAILED(result)) {
+		return result;
+	}
+
+	return result;
 }
 
